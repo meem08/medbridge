@@ -27,7 +27,7 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'OTPVerification'>
 export const OTPVerificationScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<OTPRouteProp>();
-  const { emailOrPhone, flow, role } = route.params;
+  const { emailOrPhone = '', flow = 'signup', role = 'donor' } = route.params || {};
 
   const [code, setCode] = useState<string[]>([]);
   const [timer, setTimer] = useState(20);
