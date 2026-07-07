@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String        @id @default(uuid())
+  email            String        @unique
+  passwordHash     String
+  role             String        // 'donor', 'hospital', 'bloodbank'
+  name             String
+  location         String?
+  contactNumber    String?
+  bloodType        String?       // For donors
+  dateOfBirth      String?       // For donors
+  isEligible       Boolean       @default(true) // For donors
+  lastDonationDate String?       // For donors
+  donations        Donation[]
+  appointments     Appointment[]
+}
+
+model BloodRequest {
+  id               String        @id
+  bloodType        String
+  units            Int
+  hospitalName     String
+  location         String
+  urgency          String        // 'urgent', 'routine'
+  status           String        // 'pending', 'matching', 'reserved', 'transit', 'delivered', 'cancelled'
+  eta              String?
+  explanation      String?       // AI explanation
+  createdAt        DateTime      @default(now())
+}
+
+model InventoryItem {
+  id               String        @id @default(uuid())
+  bloodType        String        @unique
+  units            Int
+  minRequired      Int
+}
+
+model Donation {
+  id               String        @id
+  date             String
+  location         String
+  units            Int
+  bp               String
+  hemoglobin       String
+  pulse            String
+  donorId          String
+  donor            User          @relation(fields: [donorId], references: [id])
+}
+
+model Appointment {
+  id               String        @id @default(uuid())
+  date             String
+  time             String
+  location         String
+  donorId          String
+  donor            User          @relation(fields: [donorId], references: [id])
+}
