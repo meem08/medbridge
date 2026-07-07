@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
-import { Badge } from '../../components/Badge';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useBlood } from '../../context/BloodContext';
 
 interface NotificationItem {
   id: string;
@@ -26,50 +26,65 @@ interface NotificationItem {
 
 export const HospitalNotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { requests, inventory } = useBlood();
   const [activeTab, setActiveTab] = useState<'all' | 'critical' | 'emergency' | 'nearby'>('all');
+  const [readIds, setReadIds] = useState<string[]>([]);
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: '1',
-      type: 'critical',
-      tag: 'Immediate Action',
-      time: '2 mins ago',
-      title: 'Low O- Stock Level',
-      description: 'Blood bank inventory for O-Negative has dropped below critical threshold (2 units remaining). Immediate replenishment request required for Central Hospital.',
-      isRead: false,
-    },
-    {
-      id: '2',
-      type: 'emergency',
-      tag: 'Match Dispatched',
-      time: '10 mins ago',
-      title: 'Courier Departed',
-      description: 'Courier has departed for City Hospital carrying 2 units of A+. Tracking link is active.',
-      isRead: false,
-    },
-    {
-      id: '3',
-      type: 'nearby',
-      tag: 'Potential Donor Alert',
-      time: '30 mins ago',
-      title: 'Donors Responded',
-      description: '2 eligible O-Negative donors have responded in a 5km radius to your active emergency alert.',
-      isRead: false,
-    },
-    {
-      id: '4',
-      type: 'critical',
-      tag: 'Critical Alert',
-      time: '2 hours ago',
-      title: 'Platelet Unit Expiry Warning',
-      description: '3 units of AB+ platelets will reach maximum shelf life in 12 hours. Plan dispatch immediately.',
-      isRead: true,
-    },
-  ]);
+  const notifications = useMemo<NotificationItem[]>(() => {
+    const list: NotificationItem[] = [];
+
+    // 1. Low stock alerts (Critical)
+    Object.values(inventory).forEach((item) => {
+      if (item.units < item.minRequired) {
+        list.push({
+          id: `low-stock-${item.bloodType}`,
+          type: 'critical',
+          tag: 'Immediate Action',
+          time: 'Active',
+          title: `Low ${item.bloodType} Stock Level`,
+          description: `Blood bank inventory for ${item.bloodType} has dropped below safety threshold (${item.units} units remaining). Immediate replenishment request required.`,
+          isRead: readIds.includes(`low-stock-${item.bloodType}`),
+        });
+      }
+    });
+
+    // 2. Courier active dispatches (Emergency)
+    requests.forEach((req) => {
+      if (req.status === 'in-transit') {
+        list.push({
+          id: `courier-${req.id}`,
+          type: 'emergency',
+          tag: 'Match Dispatched',
+          time: 'En Route',
+          title: `Courier Departed for ${req.hospitalName}`,
+          description: `Courier has departed carrying ${req.units} units of ${req.bloodType}. ETA: ${req.eta || '15 mins'}. Delivery Location: ${req.deliveryLocation || 'Emergency Ward'}.`,
+          isRead: readIds.includes(`courier-${req.id}`),
+        });
+      }
+    });
+
+    // 3. Match found / Donors Responded (Nearby)
+    requests.forEach((req) => {
+      if (req.status === 'matched') {
+        list.push({
+          id: `match-${req.id}`,
+          type: 'nearby',
+          tag: 'Match Identified',
+          time: 'Active',
+          title: `Donor Matched for ${req.bloodType}`,
+          description: `An eligible donor (${req.matchedDonorName || 'AI Pair'}) has been matched to your emergency request for ${req.units} units of ${req.bloodType}.`,
+          isRead: readIds.includes(`match-${req.id}`),
+        });
+      }
+    });
+
+    return list;
+  }, [requests, inventory, readIds]);
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    Alert.alert('Success', 'All notifications marked as read.');
+    const allIds = notifications.map((n) => n.id);
+    setReadIds(allIds);
+    Alert.alert('Success', 'All alerts marked as read.');
   };
 
   const filteredNotifications = notifications.filter((n) => {

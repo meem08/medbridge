@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
+import { useBlood } from '../../context/BloodContext';
 
 interface DonorNotificationItem {
   id: string;
@@ -23,42 +26,120 @@ interface DonorNotificationItem {
   isRead: boolean;
 }
 
+const API_URL = 'http://localhost:5001/api';
+
 export const DonorNotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState<'all' | 'critical' | 'match' | 'reward'>('all');
+  const { user } = useAuth();
+  const { requests } = useBlood();
 
-  const [notifications, setNotifications] = useState<DonorNotificationItem[]>([
-    {
-      id: '1',
-      type: 'critical',
-      tag: 'Urgent Request',
-      time: '5 mins ago',
-      title: 'Emergency O- Needed',
-      description: 'City General Hospital has issued a critical alert for O-Negative blood. As a registered universal donor, your response is highly requested.',
-      isRead: false,
-    },
-    {
-      id: '2',
-      type: 'match',
-      tag: 'Appointment Confirmed',
-      time: '2 hours ago',
-      title: 'Booking Confirmed',
-      description: 'Your blood donation appointment on March 14, 2026, at 09:30 AM at Central Clinic has been verified and confirmed.',
-      isRead: false,
-    },
-    {
-      id: '3',
-      type: 'reward',
-      tag: 'Badge Unlocked',
-      time: '1 day ago',
-      title: '5-Life Saver Achievement',
-      description: 'Congratulations! You have completed your 4th donation, saving up to 12 lives. Your "5-Life Saver" badge is now unlocked.',
-      isRead: true,
-    },
-  ]);
+  const [activeTab, setActiveTab] = useState<'all' | 'critical' | 'match' | 'reward'>('all');
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [donations, setDonations] = useState<any[]>([]);
+  const [readIds, setReadIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDonorAssets = async () => {
+      if (!user?.id) return;
+      try {
+        const [apptsRes, historyRes] = await Promise.all([
+          fetch(`${API_URL}/donors/appointments/${user.id}`).then((r) => r.json()),
+          fetch(`${API_URL}/donors/history/${user.id}`).then((r) => r.json()),
+        ]);
+
+        if (apptsRes.success && apptsRes.data) {
+          setAppointments(apptsRes.data);
+        }
+        if (historyRes.success && historyRes.data) {
+          setDonations(historyRes.data);
+        }
+      } catch (err) {
+        console.error('Error fetching donor notifications assets:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDonorAssets();
+  }, [user]);
+
+  const notifications = useMemo<DonorNotificationItem[]>(() => {
+    const list: DonorNotificationItem[] = [];
+
+    // 1. Emergency Requests matching donor blood type (Critical)
+    const matchingReqs = requests.filter(
+      (r) =>
+        r.status === 'pending' &&
+        (r.bloodType === (user as any)?.bloodType || (user as any)?.bloodType === 'O-')
+    );
+    matchingReqs.forEach((req) => {
+      list.push({
+        id: `req-${req.id}`,
+        type: 'critical',
+        tag: 'Urgent Request',
+        time: 'Active',
+        title: `Emergency ${req.bloodType} Needed`,
+        description: `${req.hospitalName} has issued a critical alert for ${req.bloodType} blood. As a compatible donor, your assistance is requested.`,
+        isRead: readIds.includes(`req-${req.id}`),
+      });
+    });
+
+    // 2. Confirmed Appointments (Match)
+    appointments.forEach((appt) => {
+      list.push({
+        id: `appt-${appt.id}`,
+        type: 'match',
+        tag: 'Appointment Confirmed',
+        time: 'Upcoming',
+        title: 'Booking Confirmed',
+        description: `Your blood donation appointment on ${appt.date} at ${appt.time} has been verified and confirmed. Venue: ${appt.venue || 'Donor Center'}.`,
+        isRead: readIds.includes(`appt-${appt.id}`),
+      });
+    });
+
+    // 3. Reward Badges Unlocked (Reward)
+    const count = donations.length;
+    if (count >= 1) {
+      list.push({
+        id: 'reward-first',
+        type: 'reward',
+        tag: 'Badge Unlocked',
+        time: 'Unlocked',
+        title: 'First Donation Badge',
+        description: 'Congratulations! You completed your first blood donation and saved up to 3 lives. Thank you!',
+        isRead: readIds.includes('reward-first'),
+      });
+    }
+    if (count >= 5) {
+      list.push({
+        id: 'reward-5',
+        type: 'reward',
+        tag: 'Badge Unlocked',
+        time: 'Unlocked',
+        title: '5-Life Saver Achievement',
+        description: 'Congratulations! You completed 5 donations, saving up to 15 lives. Your badge is unlocked!',
+        isRead: readIds.includes('reward-5'),
+      });
+    }
+    if (count >= 10) {
+      list.push({
+        id: 'reward-10',
+        type: 'reward',
+        tag: 'Badge Unlocked',
+        time: 'Unlocked',
+        title: '10-Life Hero Achievement',
+        description: 'Congratulations! You completed 10 donations, saving up to 30 lives. You are a community hero!',
+        isRead: readIds.includes('reward-10'),
+      });
+    }
+
+    return list;
+  }, [requests, user, appointments, donations, readIds]);
 
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    const allIds = notifications.map((n) => n.id);
+    setReadIds(allIds);
     Alert.alert('Success', 'All notifications marked as read.');
   };
 
@@ -135,18 +216,24 @@ export const DonorNotificationsScreen: React.FC = () => {
       </View>
 
       {/* Notifications List */}
-      <FlatList
-        data={filteredNotifications}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="notifications-off-outline" size={48} color={colors.textMuted} />
-            <Text style={styles.emptyText}>No notifications found.</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.secondary} />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredNotifications}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="notifications-off-outline" size={48} color={colors.textMuted} />
+              <Text style={styles.emptyText}>No notifications found.</Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
