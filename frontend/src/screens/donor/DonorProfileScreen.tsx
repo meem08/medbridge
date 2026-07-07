@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
@@ -14,20 +15,37 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
+const API_URL = 'http://localhost:5001/api';
+
 export const DonorProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation();
+
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`${API_URL}/auth/profile/${user.id}`);
+        const resData = await response.json();
+        if (resData.success && resData.data) {
+          setProfile(resData.data);
+        }
+      } catch (err) {
+        console.error('Error fetching donor profile:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const handleLogout = () => {
     logout();
     navigation.getParent()?.navigate('ChooseRole');
   };
-
-  const badges = [
-    { title: 'First Donation', sub: 'Unlocked 2021', icon: 'heart', locked: false },
-    { title: '5-Life Saver', sub: 'Unlocked 2021', icon: 'water', locked: false },
-    { title: '10-Life Hero', sub: 'Locked', icon: 'trophy', locked: true },
-  ];
 
   const menuOptions = [
     { name: 'Notifications History', icon: 'notifications-outline', route: 'DonorNotifications' },
@@ -35,6 +53,23 @@ export const DonorProfileScreen: React.FC = () => {
     { name: 'Eligibility Guidelines', icon: 'shield-checkmark-outline', action: () => Alert.alert('Eligibility Check', 'You are currently eligible to donate.') },
     { name: 'Personal Profile Info', icon: 'person-outline', action: () => Alert.alert('Profile Settings', 'Personal information details page.') },
     { name: 'App Settings', icon: 'settings-outline', action: () => Alert.alert('Settings', 'Notification preferences & dark mode settings.') },
+  ];
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.secondary} />
+      </SafeAreaView>
+    );
+  }
+
+  const donationsCount = profile?.donations?.length || 0;
+  const livesSavedCount = donationsCount * 3;
+
+  const badges = [
+    { title: 'First Donation', sub: 'Unlocked 2021', icon: 'heart', locked: donationsCount < 1 },
+    { title: '5-Life Saver', sub: 'Unlocked 2021', icon: 'water', locked: donationsCount < 5 },
+    { title: '10-Life Hero', sub: 'Locked', icon: 'trophy', locked: donationsCount < 10 },
   ];
 
   return (
@@ -46,7 +81,7 @@ export const DonorProfileScreen: React.FC = () => {
             <Ionicons name="person" size={24} color={colors.secondary} />
           </View>
           <View>
-            <Text style={styles.welcomeText}>Hello, Ada</Text>
+            <Text style={styles.welcomeText}>Hello, {profile?.name?.split(' ')[0] || 'Donor'}</Text>
             <Text style={styles.subtext}>Saving lives since 2021</Text>
           </View>
         </View>
@@ -67,7 +102,7 @@ export const DonorProfileScreen: React.FC = () => {
           </View>
           <View>
             <Text style={styles.urgentTitle}>URGENT REQUEST</Text>
-            <Text style={styles.urgentDesc}>Hospital A needs O- Blood Units immediately.</Text>
+            <Text style={styles.urgentDesc}>Hospitals need O- Blood Units immediately.</Text>
           </View>
         </TouchableOpacity>
 
@@ -78,19 +113,19 @@ export const DonorProfileScreen: React.FC = () => {
           <View style={styles.gridCard}>
             <Text style={styles.gridCardLabel}>BLOOD GROUP</Text>
             <View style={styles.bloodTypePill}>
-              <Text style={styles.bloodTypeText}>O-</Text>
+              <Text style={styles.bloodTypeText}>{profile?.bloodType || 'N/A'}</Text>
             </View>
-            <Text style={styles.gridCardSub}>Universal Donor</Text>
+            <Text style={styles.gridCardSub}>{profile?.bloodType === 'O-' ? 'Universal Donor' : 'Compatible Donor'}</Text>
           </View>
 
           {/* Eligibility */}
           <View style={styles.gridCard}>
             <Text style={styles.gridCardLabel}>ELIGIBILITY</Text>
             <View style={styles.eligibleBadge}>
-              <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
-              <Text style={styles.eligibleText}>YES</Text>
+              <Ionicons name="checkmark-circle" size={24} color={profile?.isEligible ? colors.primary : colors.textMuted} />
+              <Text style={styles.eligibleText}>{profile?.isEligible ? 'YES' : 'NO'}</Text>
             </View>
-            <Text style={styles.gridCardSub}>Ready to Donate</Text>
+            <Text style={styles.gridCardSub}>{profile?.isEligible ? 'Ready to Donate' : 'Temporary Hold'}</Text>
           </View>
         </View>
 
@@ -100,14 +135,14 @@ export const DonorProfileScreen: React.FC = () => {
             <Ionicons name="heart" size={18} color={colors.secondary} />
             <View>
               <Text style={styles.miniStatLabel}>Lives Saved</Text>
-              <Text style={styles.miniStatValue}>12</Text>
+              <Text style={styles.miniStatValue}>{livesSavedCount}</Text>
             </View>
           </View>
           <View style={styles.miniStatCard}>
             <Ionicons name="water" size={18} color={colors.secondary} />
             <View>
               <Text style={styles.miniStatLabel}>Donations</Text>
-              <Text style={styles.miniStatValue}>4</Text>
+              <Text style={styles.miniStatValue}>{donationsCount}</Text>
             </View>
           </View>
         </View>

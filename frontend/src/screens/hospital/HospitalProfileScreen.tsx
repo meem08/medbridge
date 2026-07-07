@@ -11,11 +11,14 @@ import {
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
 import { useAuth } from '../../context/AuthContext';
+import { useBlood } from '../../context/BloodContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { BloodInventoryItem } from '../../models/inventory';
 
 export const HospitalProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
+  const { requests, inventory } = useBlood();
   const navigation = useNavigation();
 
   const handleLogout = () => {
@@ -24,12 +27,26 @@ export const HospitalProfileScreen: React.FC = () => {
   };
 
   const menuOptions = [
-    { name: 'Emergency Alerts', icon: 'notifications-active-outline', route: 'HospitalNotifications' },
+    { name: 'Emergency Alerts', icon: 'notifications-outline', route: 'HospitalNotifications' },
     { name: 'Nearby Hospitals', icon: 'business-outline', action: () => Alert.alert('Nearby Hospitals', 'Scanning local clinical partners...') },
     { name: 'Eligibility Guide', icon: 'document-text-outline', action: () => Alert.alert('Clinical Eligibility', 'Loading national blood eligibility standards...') },
     { name: 'Support Helpdesk', icon: 'help-circle-outline', action: () => Alert.alert('Support', 'Contacting clinical coordination IT helpdesk...') },
     { name: 'Clinical Settings', icon: 'settings-outline', action: () => Alert.alert('Settings', 'Facility settings locked by administrator.') },
   ];
+
+  // Dynamic stats calculations
+  const emergencyRequestsCount = requests.filter(r => (r.urgency === 'urgent' || r.urgency === 'critical') && r.status !== 'delivered' && r.status !== 'cancelled').length;
+  const emergencyRequestsString = String(emergencyRequestsCount).padStart(2, '0');
+
+  const inventoryItems = Object.values(inventory) as BloodInventoryItem[];
+  const availableCount = inventoryItems.filter(item => item.units >= item.minRequired).length;
+  const availabilityPercentage = inventoryItems.length > 0 ? Math.round((availableCount / inventoryItems.length) * 100) : 0;
+
+  const matchingCount = requests.filter(r => r.status === 'matching').length;
+  const matchingString = String(matchingCount).padStart(2, '0');
+
+  const transitCount = requests.filter(r => r.status === 'in-transit' || r.status === 'matched').length;
+  const transitString = String(transitCount).padStart(2, '0');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,8 +57,8 @@ export const HospitalProfileScreen: React.FC = () => {
             <Ionicons name="medical" size={32} color={colors.secondary} />
           </View>
           <View>
-            <Text style={styles.welcomeText}>Welcome, Dr. Li</Text>
-            <Text style={styles.hospitalText}>CENTRAL GENERAL HOSPITAL</Text>
+            <Text style={styles.welcomeText}>Welcome, {user?.name || 'Dr. Li'}</Text>
+            <Text style={styles.hospitalText}>{(user as any)?.location?.toUpperCase() || 'CENTRAL GENERAL HOSPITAL'}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
@@ -60,9 +77,9 @@ export const HospitalProfileScreen: React.FC = () => {
               <Ionicons name="alarm-outline" size={18} color={colors.secondary} />
             </View>
             <View style={styles.gridCardFooter}>
-              <Text style={styles.gridCardValue}>03</Text>
+              <Text style={styles.gridCardValue}>{emergencyRequestsString}</Text>
               <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: '60%' }]} />
+                <View style={[styles.progressFill, { width: emergencyRequestsCount > 0 ? `${Math.min(100, emergencyRequestsCount * 25)}%` : '0%' }]} />
               </View>
             </View>
           </View>
@@ -74,8 +91,8 @@ export const HospitalProfileScreen: React.FC = () => {
               <Ionicons name="checkbox-outline" size={18} color={colors.primary} />
             </View>
             <View style={styles.gridCardFooter}>
-              <Text style={styles.gridCardValue}>94%</Text>
-              <Text style={styles.gridCardTrend}>+2.4% vs yesterday</Text>
+              <Text style={styles.gridCardValue}>{availabilityPercentage}%</Text>
+              <Text style={styles.gridCardTrend}>{availabilityPercentage >= 80 ? 'Optimal reserves safety' : 'Safety buffer critically low'}</Text>
             </View>
           </View>
 
@@ -86,7 +103,7 @@ export const HospitalProfileScreen: React.FC = () => {
               <Ionicons name="git-network-outline" size={18} color={colors.primary} />
             </View>
             <View style={styles.gridCardFooter}>
-              <Text style={styles.gridCardValue}>12</Text>
+              <Text style={styles.gridCardValue}>{matchingString}</Text>
               <Text style={styles.gridCardSub}>AI Active</Text>
             </View>
           </View>
@@ -98,8 +115,8 @@ export const HospitalProfileScreen: React.FC = () => {
               <Ionicons name="bicycle-outline" size={18} color={colors.primary} />
             </View>
             <View style={styles.gridCardFooter}>
-              <Text style={styles.gridCardValue}>08</Text>
-              <Text style={styles.gridCardSub}>Courier En Route</Text>
+              <Text style={styles.gridCardValue}>{transitString}</Text>
+              <Text style={styles.gridCardSub}>{transitCount > 0 ? 'Courier En Route' : 'No active dispatches'}</Text>
             </View>
           </View>
         </View>
