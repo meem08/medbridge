@@ -64,9 +64,63 @@ const initialRequests: BloodRequest[] = [
   },
 ];
 
+const API_URL = 'http://localhost:5001/api';
+
 export const BloodProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [inventory, setInventory] = useState<BloodInventory>(initialInventory);
   const [requests, setRequests] = useState<BloodRequest[]>(initialRequests);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const fetchInventory = async () => {
+    try {
+      const response = await fetch(`${API_URL}/inventory`);
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        const invObj = {} as BloodInventory;
+        resData.data.forEach((item: any) => {
+          invObj[item.bloodType as BloodType] = {
+            bloodType: item.bloodType as BloodType,
+            units: item.units,
+            minRequired: item.minRequired,
+            lastUpdated: new Date().toISOString(),
+          };
+        });
+        setInventory(invObj);
+      }
+    } catch (err) {
+      console.error('Error fetching inventory:', err);
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch(`${API_URL}/requests`);
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        const mapped = resData.data.map((req: any) => ({
+          id: req.id,
+          hospitalId: 'hosp_1',
+          hospitalName: req.hospitalName,
+          bloodType: req.bloodType as BloodType,
+          units: req.units,
+          urgency: req.urgency as UrgencyLevel,
+          status: req.status as RequestStatus,
+          createdAt: req.createdAt,
+          deliveryLocation: req.location,
+          eta: req.eta || undefined,
+          notes: req.explanation || undefined,
+        }));
+        setRequests(mapped);
+      }
+    } catch (err) {
+      console.error('Error fetching requests:', err);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchInventory();
+    fetchRequests();
+  }, []);
 
   const createBloodRequest = async (
     bloodType: BloodType,
@@ -75,102 +129,72 @@ export const BloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     deliveryLocation: string,
     notes?: string
   ): Promise<string> => {
-    // Simulate network latency
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bloodType,
+          units,
+          urgency,
+          hospitalName: 'Metro Health Medical Center',
+          location: deliveryLocation,
+        }),
+      });
 
-    const requestId = 'req_' + Date.now();
-    const newRequest: BloodRequest = {
-      id: requestId,
-      hospitalId: 'hosp_1',
-      hospitalName: 'Metro Health Medical Center',
-      bloodType,
-      units,
-      urgency,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      deliveryLocation,
-      notes,
-    };
-
-    setRequests((prev) => [newRequest, ...prev]);
-
-    // Also deduct units from local inventory if it's hospital side or adjust state
-    setInventory((prev: BloodInventory) => {
-      const currentItem = prev[bloodType];
-      const newUnits = Math.max(0, currentItem.units - units);
-      return {
-        ...prev,
-        [bloodType]: {
-          ...currentItem,
-          units: newUnits,
-          lastUpdated: new Date().toISOString(),
-        },
-      };
-    });
-
-    return requestId;
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        await fetchRequests();
+        await fetchInventory();
+        setIsLoading(false);
+        return resData.data.id;
+      }
+    } catch (err) {
+      console.error('Error creating blood request:', err);
+    }
+    setIsLoading(false);
+    return 'req_' + Date.now();
   };
 
-  const updateRequestStatus = (requestId: string, status: RequestStatus) => {
-    setRequests((prev) =>
-      prev.map((req) => (req.id === requestId ? { ...req, status } : req))
-    );
+  const updateRequestStatus = async (requestId: string, status: RequestStatus) => {
+    try {
+      const response = await fetch(`${API_URL}/requests/${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const resData = await response.json();
+      if (resData.success) {
+        await fetchRequests();
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+    }
   };
 
-  // Helper function to mock the AI matching and transit pipeline automatically
-  const triggerMockDeliveryFlow = (requestId: string) => {
-    const donorNames = ['Robert Chen', 'Grace Hopper', 'Alan Turing', 'Ada Lovelace'];
-    const selectedDonor = donorNames[Math.floor(Math.random() * donorNames.length)];
-
-    // Step 1: Shift to matching immediately
-    updateRequestStatus(requestId, 'matching');
-
-    // Step 2: Shift to matched after 3 seconds
-    setTimeout(() => {
+  const triggerMockDeliveryFlow = async (requestId: string) => {
+    try {
+      // 1. Shift to matching locally first
       setRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId
-            ? {
-                ...req,
-                status: 'matched',
-                matchedDonorId: 'donor_mock_' + Math.floor(Math.random() * 100),
-                matchedDonorName: selectedDonor,
-                eta: '25 mins',
-              }
-            : req
-        )
+        prev.map((req) => (req.id === requestId ? { ...req, status: 'matching' as RequestStatus } : req))
       );
-    }, 3000);
 
-    // Step 3: Shift to in-transit after 6 seconds
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId
-            ? {
-                ...req,
-                status: 'in-transit',
-                eta: '18 mins',
-              }
-            : req
-        )
-      );
-    }, 6000);
+      // 2. Call backend AI matchmaker
+      const response = await fetch(`${API_URL}/ai/match`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId }),
+      });
 
-    // Step 4: Shift to delivered after 12 seconds
-    setTimeout(() => {
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId
-            ? {
-                ...req,
-                status: 'delivered',
-                eta: undefined,
-              }
-            : req
-        )
-      );
-    }, 12000);
+      const resData = await response.json();
+      if (resData.success) {
+        await fetchRequests();
+        await fetchInventory();
+      }
+    } catch (err) {
+      console.error('Error triggering AI match flow:', err);
+    }
   };
 
   return (
