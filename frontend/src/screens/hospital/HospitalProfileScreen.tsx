@@ -57,8 +57,8 @@ export const HospitalProfileScreen: React.FC = () => {
             <Ionicons name="medical" size={32} color={colors.secondary} />
           </View>
           <View>
-            <Text style={styles.welcomeText}>Welcome, {user?.name || 'Dr. Li'}</Text>
-            <Text style={styles.hospitalText}>{(user as any)?.location?.toUpperCase() || 'CENTRAL GENERAL HOSPITAL'}</Text>
+            <Text style={styles.welcomeText}>Welcome, {user?.name}</Text>
+            <Text style={styles.hospitalText}>{(user as any)?.location?.toUpperCase()}</Text>
           </View>
         </View>
         <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
