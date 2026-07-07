@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
@@ -16,6 +15,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { formatDate } from '../../utils/formatters';
+import { AlertModal } from '../../components/AlertModal';
 
 type RootStackParamList = {
   DonorHealthVerification: { donationId: string };
@@ -34,10 +34,32 @@ export const DonorHealthVerificationScreen: React.FC = () => {
   const { donationId } = route.params;
   const { user } = useAuth();
 
-  const [donation, setDonation] = React.useState<any>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [donation, setDonation] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+    });
+  };
+
+  useEffect(() => {
     const fetchDonationDetails = async () => {
       if (!user?.id || !donationId) return;
       try {
@@ -58,7 +80,7 @@ export const DonorHealthVerificationScreen: React.FC = () => {
   }, [user, donationId]);
 
   const handleDownloadCertificate = () => {
-    Alert.alert('Download Complete', 'Your verified donation certificate has been saved to your files.');
+    showAlert('Download Complete', 'Your verified donation certificate has been saved to your files.', 'success');
   };
 
   if (loading) {
@@ -99,7 +121,7 @@ export const DonorHealthVerificationScreen: React.FC = () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Verification</Text>
         <TouchableOpacity
-          onPress={() => Alert.alert('Emergency Assistance', 'Connecting to clinical dispatcher...')}
+          onPress={() => showAlert('Emergency Assistance', 'Connecting to clinical dispatcher...', 'info')}
           style={styles.helpButton}
         >
           <Ionicons name="medkit" size={24} color={colors.secondary} />
@@ -202,6 +224,14 @@ export const DonorHealthVerificationScreen: React.FC = () => {
           <Ionicons name="open-outline" size={16} color={colors.primary} />
         </TouchableOpacity>
       </ScrollView>
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+      />
     </SafeAreaView>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
@@ -15,11 +14,34 @@ import { useBlood } from '../../context/BloodContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { BloodInventoryItem } from '../../models/inventory';
+import { AlertModal } from '../../components/AlertModal';
 
 export const HospitalProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
   const { requests, inventory } = useBlood();
   const navigation = useNavigation();
+
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+    });
+  };
 
   const handleLogout = () => {
     logout();
@@ -29,10 +51,10 @@ export const HospitalProfileScreen: React.FC = () => {
 
   const menuOptions = [
     { name: 'Emergency Alerts', icon: 'notifications-outline', route: 'HospitalNotifications' },
-    { name: 'Nearby Hospitals', icon: 'business-outline', action: () => Alert.alert('Nearby Hospitals', 'Scanning local clinical partners...') },
-    { name: 'Eligibility Guide', icon: 'document-text-outline', action: () => Alert.alert('Clinical Eligibility', 'Loading national blood eligibility standards...') },
-    { name: 'Support Helpdesk', icon: 'help-circle-outline', action: () => Alert.alert('Support', 'Contacting clinical coordination IT helpdesk...') },
-    { name: 'Clinical Settings', icon: 'settings-outline', action: () => Alert.alert('Settings', 'Facility settings locked by administrator.') },
+    { name: 'Nearby Hospitals', icon: 'business-outline', action: () => showAlert('Nearby Hospitals', 'Scanning local clinical partners...', 'info') },
+    { name: 'Eligibility Guide', icon: 'document-text-outline', action: () => showAlert('Clinical Eligibility', 'Loading national blood eligibility standards...', 'info') },
+    { name: 'Support Helpdesk', icon: 'help-circle-outline', action: () => showAlert('Support', 'Contacting clinical coordination IT helpdesk...', 'info') },
+    { name: 'Clinical Settings', icon: 'settings-outline', action: () => showAlert('Settings', 'Facility settings locked by administrator.', 'warning') },
   ];
 
   // Dynamic stats calculations
@@ -147,6 +169,14 @@ export const HospitalProfileScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+      />
     </SafeAreaView>
   );
 };

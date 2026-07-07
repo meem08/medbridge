@@ -6,13 +6,13 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { useNavigation } from '@react-navigation/native';
+import { AlertModal } from '../../components/AlertModal';
 
 const LOCATIONS = [
   'City Central Blood Bank (Main Street)',
@@ -30,21 +30,47 @@ export const BookAppointmentScreen: React.FC = () => {
   const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[1]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: 'success' | 'error' | 'info' | 'warning' = 'info',
+    onConfirm: () => void = () => {}
+  ) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+      onConfirm,
+    });
+  };
+
   const handleBook = () => {
     setIsSubmitting(true);
     // Simulate booking API call
     setTimeout(() => {
       setIsSubmitting(false);
-      if (Platform.OS === 'web') {
-        alert(`Appointment Confirmed\n\nThank you! Your donation is scheduled at:\n\n📍 ${location}\n📅 ${date} at ${timeSlot}\n\nPlease bring a valid ID and eat a light meal beforehand.`);
-        navigation.goBack();
-      } else {
-        Alert.alert(
-          'Appointment Confirmed',
-          `Thank you! Your donation is scheduled at:\n\n📍 ${location}\n📅 ${date} at ${timeSlot}\n\nPlease bring a valid ID and eat a light meal beforehand.`,
-          [{ text: 'Close', onPress: () => navigation.goBack() }]
-        );
-      }
+      showAlert(
+        'Appointment Confirmed',
+        `Thank you! Your donation is scheduled at:\n\n📍 ${location}\n📅 ${date} at ${timeSlot}\n\nPlease bring a valid ID and eat a light meal beforehand.`,
+        'success',
+        () => navigation.goBack()
+      );
     }, 1000);
   };
 
@@ -141,6 +167,18 @@ export const BookAppointmentScreen: React.FC = () => {
           />
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+        onConfirm={() => {
+          setAlertConfig((prev) => ({ ...prev, visible: false }));
+          alertConfig.onConfirm();
+        }}
+      />
     </SafeAreaView>
   );
 };

@@ -6,7 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
@@ -14,6 +13,7 @@ import { Card } from '../../components/Card';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { AlertModal } from '../../components/AlertModal';
 
 const API_URL = 'http://localhost:5001/api';
 
@@ -23,6 +23,28 @@ export const DonorProfileScreen: React.FC = () => {
 
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+    });
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -51,9 +73,9 @@ export const DonorProfileScreen: React.FC = () => {
   const menuOptions = [
     { name: 'Notifications History', icon: 'notifications-outline', route: 'DonorNotifications' },
     { name: 'Health Record & Vitals', icon: 'fitness-outline', route: 'DonationHistory' },
-    { name: 'Eligibility Guidelines', icon: 'shield-checkmark-outline', action: () => Alert.alert('Eligibility Check', 'You are currently eligible to donate.') },
-    { name: 'Personal Profile Info', icon: 'person-outline', action: () => Alert.alert('Profile Settings', 'Personal information details page.') },
-    { name: 'App Settings', icon: 'settings-outline', action: () => Alert.alert('Settings', 'Notification preferences & dark mode settings.') },
+    { name: 'Eligibility Guidelines', icon: 'shield-checkmark-outline', action: () => showAlert('Eligibility Check', 'You are currently eligible to donate.', 'success') },
+    { name: 'Personal Profile Info', icon: 'person-outline', action: () => showAlert('Profile Settings', 'Personal information details page.', 'info') },
+    { name: 'App Settings', icon: 'settings-outline', action: () => showAlert('Settings', 'Notification preferences & dark mode settings.', 'info') },
   ];
 
   if (loading) {
@@ -198,6 +220,14 @@ export const DonorProfileScreen: React.FC = () => {
           ))}
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+      />
     </SafeAreaView>
   );
 };

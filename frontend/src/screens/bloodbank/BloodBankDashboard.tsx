@@ -7,7 +7,6 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
-  Alert,
   Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
@@ -17,6 +16,7 @@ import { Badge } from '../../components/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { AlertModal } from '../../components/AlertModal';
 
 interface RegionalRequest {
   id: string;
@@ -40,39 +40,65 @@ export const BloodBankDashboard: React.FC = () => {
 
   const [requests, setRequests] = useState<RegionalRequest[]>([]);
 
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: 'success' | 'error' | 'info' | 'warning' = 'info',
+    confirmText: string = 'OK',
+    cancelText?: string,
+    onConfirm: () => void = () => {}
+  ) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+      confirmText,
+      cancelText,
+      onConfirm,
+    });
+  };
+
   const handleAddRequest = () => {
-    if (Platform.OS === 'web') {
-      const newReq: RegionalRequest = {
-        id: 'REQ-' + Math.floor(Math.random() * 10000),
-        bloodType: 'O-',
-        units: 3,
-        hospital: 'Central General Hospital',
-        urgency: 'urgent',
-        time: 'Just now',
-        status: 'matching',
-      };
-      setRequests((prev) => [newReq, ...prev]);
-      alert('Simulated O- Emergency Dispatch Request Added!');
-    } else {
-      Alert.alert('Simulate Request', 'Enter details for matching algorithm simulated dispatcher...', [
-        {
-          text: 'Dispatch O-',
-          onPress: () => {
-            const newReq: RegionalRequest = {
-              id: 'REQ-' + Math.floor(Math.random() * 10000),
-              bloodType: 'O-',
-              units: 3,
-              hospital: 'Central General Hospital',
-              urgency: 'urgent',
-              time: 'Just now',
-              status: 'matching',
-            };
-            setRequests((prev) => [newReq, ...prev]);
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]);
-    }
+    showAlert(
+      'Simulate Request',
+      'Enter details for matching algorithm simulated dispatcher...',
+      'info',
+      'Dispatch O-',
+      'Cancel',
+      () => {
+        const newReq: RegionalRequest = {
+          id: 'REQ-' + Math.floor(Math.random() * 10000),
+          bloodType: 'O-',
+          units: 3,
+          hospital: 'Central General Hospital',
+          urgency: 'urgent',
+          time: 'Just now',
+          status: 'matching',
+        };
+        setRequests((prev) => [newReq, ...prev]);
+        setTimeout(() => {
+          showAlert('Success', 'Simulated O- Emergency Dispatch Request Added!', 'success');
+        }, 300);
+      }
+    );
   };
 
   const renderRequestItem = ({ item }: { item: RegionalRequest }) => {
@@ -191,7 +217,7 @@ export const BloodBankDashboard: React.FC = () => {
         <View style={styles.requestsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Requests</Text>
-            <TouchableOpacity onPress={() => Alert.alert('History Log', 'Redirecting to central dispatch archives...')}>
+            <TouchableOpacity onPress={() => showAlert('History Log', 'Redirecting to central dispatch archives...', 'info')}>
               <Text style={styles.viewAllText}>View all</Text>
             </TouchableOpacity>
           </View>
@@ -208,7 +234,7 @@ export const BloodBankDashboard: React.FC = () => {
         {/* Chat Bot Button */}
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => Alert.alert('Chat Bot', 'Initializing MedBridge AI Neural Coordinator assistant...')}
+          onPress={() => showAlert('Chat Bot', 'Initializing MedBridge AI Neural Coordinator assistant...', 'info')}
           style={styles.chatBotBtn}
         >
           <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.secondary} />
@@ -224,6 +250,20 @@ export const BloodBankDashboard: React.FC = () => {
       >
         <Ionicons name="add" size={28} color={colors.textLight} />
       </TouchableOpacity>
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        confirmText={alertConfig.confirmText}
+        cancelText={alertConfig.cancelText}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+        onConfirm={() => {
+          setAlertConfig((prev) => ({ ...prev, visible: false }));
+          alertConfig.onConfirm();
+        }}
+      />
     </SafeAreaView>
   );
 };

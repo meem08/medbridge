@@ -5,7 +5,6 @@ import {
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
-  Alert,
   Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
@@ -13,6 +12,7 @@ import { Button } from '../../components/Button';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
+import { AlertModal } from '../../components/AlertModal';
 
 type RootStackParamList = {
   OTPVerification: { emailOrPhone: string; flow: 'reset' | 'signup'; role?: 'hospital' | 'donor' | 'bloodbank' };
@@ -33,6 +33,36 @@ export const OTPVerificationScreen: React.FC = () => {
   const [code, setCode] = useState<string[]>([]);
   const [timer, setTimer] = useState(20);
   const [isResendActive, setIsResendActive] = useState(false);
+
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+    onConfirm: () => {},
+  });
+
+  const showAlert = (
+    title: string,
+    message: string,
+    type: 'success' | 'error' | 'info' | 'warning' = 'info',
+    onConfirm: () => void = () => {}
+  ) => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+      onConfirm,
+    });
+  };
 
   // Timer countdown
   useEffect(() => {
@@ -60,64 +90,40 @@ export const OTPVerificationScreen: React.FC = () => {
     setTimer(20);
     setIsResendActive(false);
     setCode([]);
-    if (Platform.OS === 'web') {
-      alert('Code Resent: A new 4-digit verification code has been dispatched.');
-    } else {
-      Alert.alert('Code Resent', 'A new 4-digit verification code has been dispatched.');
-    }
+    showAlert('Code Resent', 'A new 4-digit verification code has been dispatched.', 'success');
   };
 
   const handleVerify = () => {
     if (code.length < 4) {
-      if (Platform.OS === 'web') {
-        alert('Incomplete Code: Please enter all 4 digits of the verification code.');
-      } else {
-        Alert.alert('Incomplete Code', 'Please enter all 4 digits of the verification code.');
-      }
+      showAlert('Incomplete Code', 'Please enter all 4 digits of the verification code.', 'warning');
       return;
     }
 
     const finalCode = code.join('');
     
     if (flow === 'reset') {
-      if (Platform.OS === 'web') {
-        alert('Success: Password has been successfully reset. Please log in with your new credentials.');
-        navigation.navigate('Login', { role: role || 'donor' });
-      } else {
-        Alert.alert('Success', 'Password has been successfully reset. Please log in with your new credentials.', [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Login', { role: role || 'donor' }),
-          },
-        ]);
-      }
+      showAlert(
+        'Success',
+        'Password has been successfully reset. Please log in with your new credentials.',
+        'success',
+        () => navigation.navigate('Login', { role: role || 'donor' })
+      );
     } else {
       // SignUp flow - redirect to appropriate dashboard
-      if (Platform.OS === 'web') {
-        alert('Account Verified: Your registration is complete.');
-        if (role === 'hospital') {
-          navigation.replace('HospitalMain');
-        } else if (role === 'bloodbank') {
-          navigation.replace('BloodBankMain');
-        } else {
-          navigation.replace('DonorMain');
+      showAlert(
+        'Account Verified',
+        'Your registration is complete.',
+        'success',
+        () => {
+          if (role === 'hospital') {
+            navigation.replace('HospitalMain');
+          } else if (role === 'bloodbank') {
+            navigation.replace('BloodBankMain');
+          } else {
+            navigation.replace('DonorMain');
+          }
         }
-      } else {
-        Alert.alert('Account Verified', 'Your registration is complete.', [
-          {
-            text: 'Continue',
-            onPress: () => {
-              if (role === 'hospital') {
-                navigation.replace('HospitalMain');
-              } else if (role === 'bloodbank') {
-                navigation.replace('BloodBankMain');
-              } else {
-                navigation.replace('DonorMain');
-              }
-            },
-          },
-        ]);
-      }
+      );
     }
   };
 
@@ -253,6 +259,18 @@ export const OTPVerificationScreen: React.FC = () => {
           ))}
         </View>
       </View>
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+        onConfirm={() => {
+          setAlertConfig((prev) => ({ ...prev, visible: false }));
+          alertConfig.onConfirm();
+        }}
+      />
     </SafeAreaView>
   );
 };
