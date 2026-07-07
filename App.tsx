@@ -48,11 +48,7 @@ const styles = StyleSheet.create({
         borderColor: '#e5eeff', // Soft light-gray border
         borderRadius: 24, // Rounded frame container
         overflow: 'hidden',
-        // Soft drop shadow to float the simulated mobile app on the light background
-        shadowColor: '#00163b',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.06,
-        shadowRadius: 24,
+        boxShadow: '0px 8px 24px rgba(0, 22, 59, 0.06)',
       },
       default: {},
     }),

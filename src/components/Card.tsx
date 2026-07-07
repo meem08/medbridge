@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { colors, spacing } from '../theme';
 
 interface CardProps {
@@ -43,9 +43,15 @@ const styles = StyleSheet.create({
     borderRadius: spacing.borderRadius.sm, // 4px / 0.25rem corner radius
     padding: spacing.md,
     marginBottom: spacing.md,
-    // Zero shadow by default to maintain sterile professional medical look
-    shadowOpacity: 0,
-    elevation: 0,
+    ...Platform.select({
+      web: {
+        boxShadow: 'none',
+      },
+      default: {
+        shadowOpacity: 0,
+        elevation: 0,
+      },
+    }),
   },
   lowStockBorder: {
     borderLeftWidth: 4,

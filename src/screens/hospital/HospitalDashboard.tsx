@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
@@ -252,11 +253,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   emergencyBtn: {
-    shadowColor: colors.secondary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 8px rgba(187, 0, 20, 0.15)',
+      },
+      default: {
+        shadowColor: colors.secondary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 3,
+      },
+    }),
   },
   queueContainer: {
     marginTop: spacing.sm,

@@ -8,6 +8,7 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Button } from '../../components/Button';
@@ -319,10 +320,17 @@ const styles = StyleSheet.create({
     left: 80,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.secondary,
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 3,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 6px rgba(187, 0, 20, 0.3)',
+      },
+      default: {
+        shadowColor: colors.secondary,
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 3,
+      },
+    }),
   },
   heartLine: {
     width: 14,
@@ -402,10 +410,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.border,
     borderWidth: 2,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 4,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 6px 10px rgba(0, 22, 59, 0.3)',
+      },
+      default: {
+        shadowColor: colors.primary,
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 4,
+      },
+    }),
   },
   glowPulse: {
     backgroundColor: colors.primary,
