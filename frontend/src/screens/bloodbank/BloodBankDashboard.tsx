@@ -34,7 +34,8 @@ export const BloodBankDashboard: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigation.getParent()?.navigate('ChooseRole');
+    const rootNav = navigation.getParent() || navigation;
+    (rootNav as any).navigate('ChooseRole');
   };
 
   const [requests, setRequests] = useState<RegionalRequest[]>([]);

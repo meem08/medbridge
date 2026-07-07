@@ -44,7 +44,8 @@ export const DonorProfileScreen: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigation.getParent()?.navigate('ChooseRole');
+    const rootNav = navigation.getParent() || navigation;
+    (rootNav as any).navigate('ChooseRole');
   };
 
   const menuOptions = [
