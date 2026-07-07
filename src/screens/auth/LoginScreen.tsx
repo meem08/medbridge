@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Input } from '../../components/Input';
@@ -19,10 +20,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 type RootStackParamList = {
   ChooseRole: undefined;
-  Login: { role: 'hospital' | 'donor' };
-  SignUp: { role: 'hospital' | 'donor' };
+  Login: { role: 'hospital' | 'donor' | 'bloodbank' };
+  SignUp: { role: 'hospital' | 'donor' | 'bloodbank' };
+  ForgotPassword: any;
   HospitalMain: undefined;
   DonorMain: undefined;
+  BloodBankMain: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -61,6 +64,8 @@ export const LoginScreen: React.FC = () => {
       if (success) {
         if (role === 'hospital') {
           navigation.replace('HospitalMain');
+        } else if (role === 'bloodbank') {
+          navigation.replace('BloodBankMain');
         } else {
           navigation.replace('DonorMain');
         }
@@ -73,6 +78,7 @@ export const LoginScreen: React.FC = () => {
   };
 
   const isHospital = role === 'hospital';
+  const isBloodBank = role === 'bloodbank';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -82,8 +88,16 @@ export const LoginScreen: React.FC = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={[styles.label, isHospital ? styles.hospLabel : styles.donorLabel]}>
-              {isHospital ? 'HOSPITAL CLINICAL PORTAL' : 'VOLUNTEER DONOR PORTAL'}
+            <Text style={[
+              styles.label, 
+              isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
+            ]}>
+              {isHospital 
+                ? 'HOSPITAL CLINICAL PORTAL' 
+                : isBloodBank 
+                ? 'CENTRAL BLOOD BANK PORTAL' 
+                : 'VOLUNTEER DONOR PORTAL'
+              }
             </Text>
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>
@@ -99,7 +113,7 @@ export const LoginScreen: React.FC = () => {
                 setEmail(text);
                 if (emailError) setEmailError('');
               }}
-              placeholder={isHospital ? "e.g. medical@metrohealth.org" : "e.g. donor@gmail.com"}
+              placeholder={isHospital ? "e.g. medical@metrohealth.org" : isBloodBank ? "e.g. admin@lifecare.org" : "e.g. donor@gmail.com"}
               keyboardType="email-address"
               error={emailError}
             />
@@ -116,11 +130,21 @@ export const LoginScreen: React.FC = () => {
               error={passwordError}
             />
 
+            {/* Forgot Password Link */}
+            <TouchableOpacity 
+              onPress={() => (navigation as any).navigate('ForgotPassword')}
+              style={styles.forgotPasswordContainer}
+            >
+              <Text style={isHospital || isBloodBank ? styles.hospForgotText : styles.donorForgotText}>
+                Forgot Password?
+              </Text>
+            </TouchableOpacity>
+
             <Button
               title="Sign In"
               onPress={handleLogin}
               loading={isLoading}
-              variant={isHospital ? 'primary' : 'secondary'}
+              variant={isHospital || isBloodBank ? 'primary' : 'secondary'}
               style={styles.button}
             />
           </View>
@@ -131,7 +155,7 @@ export const LoginScreen: React.FC = () => {
               title="Create Account"
               onPress={handleSignUpRedirect}
               variant="text"
-              textStyle={isHospital ? styles.hospLink : styles.donorLink}
+              textStyle={isHospital || isBloodBank ? styles.hospLink : styles.donorLink}
             />
           </View>
         </ScrollView>
@@ -200,5 +224,23 @@ const styles = StyleSheet.create({
   },
   donorLink: {
     color: colors.secondary,
+  },
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  hospForgotText: {
+    ...typography.styles.labelSm,
+    fontFamily: typography.fontFamilyLabel,
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  donorForgotText: {
+    ...typography.styles.labelSm,
+    fontFamily: typography.fontFamilyLabel,
+    color: colors.secondary,
+    fontWeight: '700',
   },
 });

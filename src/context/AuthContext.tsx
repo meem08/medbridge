@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
-import { User, UserRole, Hospital, Donor } from '../models/user';
+import { User, UserRole, Hospital, Donor, BloodBank } from '../models/user';
 
 interface AuthContextType {
   user: User | null;
@@ -23,9 +23,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 800));
 
+    let mockName = 'Tinashe Pharaoh';
+    let mockId = 'donor_1';
+    
+    if (selectedRole === 'hospital') {
+      mockName = 'Metro Health Medical Center';
+      mockId = 'hosp_1';
+    } else if (selectedRole === 'bloodbank') {
+      mockName = 'LifeCare Blood Bank';
+      mockId = 'bb_1';
+    }
+
     const mockUser: User = {
-      id: selectedRole === 'hospital' ? 'hosp_1' : 'donor_1',
-      name: selectedRole === 'hospital' ? 'Metro Health Medical Center' : 'Tinashe Pharaoh',
+      id: mockId,
+      name: mockName,
       email: email,
       role: selectedRole,
     };

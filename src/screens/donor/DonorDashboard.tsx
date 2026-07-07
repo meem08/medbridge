@@ -51,9 +51,20 @@ export const DonorDashboard: React.FC = () => {
             {user?.name || 'Tinashe Pharaoh'}
           </Text>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => (navigation as any).navigate('DonorNotifications')}
+            style={styles.notifBtn}
+          >
+            <Ionicons name="notifications-outline" size={24} color={colors.secondary} />
+            <View style={styles.notifBadge}>
+              <Text style={styles.notifBadgeText}>1</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+            <Text style={styles.logoutText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -297,5 +308,30 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: spacing.xs,
     lineHeight: 18,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  notifBtn: {
+    position: 'relative',
+    padding: 4,
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: colors.secondary,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifBadgeText: {
+    color: colors.textLight,
+    fontSize: 9,
+    fontWeight: '700',
   },
 });

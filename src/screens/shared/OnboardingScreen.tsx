@@ -151,12 +151,12 @@ export const OnboardingScreen: React.FC = () => {
         style={styles.carousel}
       >
         {slides.map((slide, index) => (
-          <View key={index} style={[styles.slide, { width: containerWidth }, isWide ? styles.slideWide : null]}>
+          <View key={index} style={[styles.slide, { width: containerWidth }, isWide ? styles.slideWide : undefined]}>
             {/* Slide Illustration */}
             <View style={styles.illustrationContainer}>{slide.renderIllustration()}</View>
 
             {/* Slide Texts */}
-            <View style={[styles.textContainer, isWide ? styles.textContainerWide : null]}>
+            <View style={[styles.textContainer, isWide ? styles.textContainerWide : undefined]}>
               <Text style={styles.slideTitle}>{slide.title}</Text>
               <Text style={styles.slideDesc}>{slide.description}</Text>
             </View>
@@ -165,7 +165,7 @@ export const OnboardingScreen: React.FC = () => {
       </ScrollView>
 
       {/* Footer Controls */}
-      <View style={[styles.footer, isWide ? styles.footerWide : null]}>
+      <View style={[styles.footer, isWide ? styles.footerWide : undefined]}>
         {/* Page Dots Indicator */}
         <View style={styles.dotsContainer}>
           {slides.map((_, index) => (
@@ -173,7 +173,7 @@ export const OnboardingScreen: React.FC = () => {
               key={index}
               style={[
                 styles.dot,
-                activePage === index ? styles.dotActive : null,
+                activePage === index ? styles.dotActive : undefined,
               ]}
             />
           ))}
@@ -184,7 +184,7 @@ export const OnboardingScreen: React.FC = () => {
           title={activePage === slides.length - 1 ? 'Get Started' : 'Next Stage'}
           onPress={handleNext}
           variant="primary"
-          style={[styles.actionButton, isWide ? styles.actionButtonWide : null]}
+          style={[styles.actionButton, isWide ? styles.actionButtonWide : undefined]}
         />
       </View>
     </SafeAreaView>

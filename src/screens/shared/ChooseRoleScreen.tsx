@@ -8,14 +8,14 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 type RootStackParamList = {
   ChooseRole: undefined;
-  Login: { role: 'hospital' | 'donor' };
+  Login: { role: 'hospital' | 'donor' | 'bloodbank' };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'ChooseRole'>;
 
 export const ChooseRoleScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [selectedRole, setSelectedRole] = useState<'hospital' | 'donor' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'hospital' | 'donor' | 'bloodbank' | null>(null);
 
   const handleContinue = () => {
     if (selectedRole) {
@@ -71,6 +71,24 @@ export const ChooseRoleScreen: React.FC = () => {
               Schedule appointments, review history, and view active emergency requests.
             </Text>
           </TouchableOpacity>
+
+          {/* Central Blood Bank Card */}
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => setSelectedRole('bloodbank')}
+            style={[
+              styles.roleCard,
+              selectedRole === 'bloodbank' ? styles.selectedCardBloodBank : null,
+            ]}
+          >
+            <View style={styles.iconWrapper}>
+              <View style={styles.bloodBankIconJar} />
+            </View>
+            <Text style={styles.cardTitle}>Central Blood Bank</Text>
+            <Text style={styles.cardDesc}>
+              Oversee regional blood supply, match pending hospital dispatches, and coordinate donor slots.
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
@@ -78,7 +96,7 @@ export const ChooseRoleScreen: React.FC = () => {
             title="Continue"
             onPress={handleContinue}
             disabled={!selectedRole}
-            variant={selectedRole === 'hospital' ? 'primary' : 'secondary'}
+            variant={selectedRole === 'donor' ? 'secondary' : 'primary'}
             style={styles.button}
           />
         </View>
@@ -139,6 +157,11 @@ const styles = StyleSheet.create({
     borderLeftWidth: 4,
     borderLeftColor: colors.secondary,
   },
+  selectedCardBloodBank: {
+    borderColor: colors.primary,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
   iconWrapper: {
     width: 48,
     height: 48,
@@ -169,6 +192,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary,
     transform: [{ rotate: '45deg' }],
     borderTopLeftRadius: 0,
+  },
+  bloodBankIconJar: {
+    width: 18,
+    height: 22,
+    borderWidth: 2.5,
+    borderColor: colors.primary,
+    borderRadius: 4,
   },
   cardTitle: {
     ...typography.styles.headlineMd,

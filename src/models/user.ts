@@ -1,4 +1,4 @@
-export type UserRole = 'donor' | 'hospital';
+export type UserRole = 'donor' | 'hospital' | 'bloodbank';
 
 export interface User {
   id: string;
@@ -23,4 +23,10 @@ export interface Donor extends User {
   phone: string;
   lastDonationDate?: string;
   isEligible: boolean;
+}
+
+export interface BloodBank extends User {
+  role: 'bloodbank';
+  facilityCode: string;
+  region: string;
 }

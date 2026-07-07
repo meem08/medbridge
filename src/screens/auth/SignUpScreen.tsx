@@ -19,9 +19,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { BloodType } from '../../models/user';
 
 type RootStackParamList = {
-  Login: { role: 'hospital' | 'donor' };
+  Login: { role: 'hospital' | 'donor' | 'bloodbank' };
+  OTPVerification: { emailOrPhone: string; flow: 'reset' | 'signup'; role: 'hospital' | 'donor' | 'bloodbank' };
   HospitalMain: undefined;
   DonorMain: undefined;
+  BloodBankMain: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -59,10 +61,13 @@ export const SignUpScreen: React.FC = () => {
     if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
 
     const isHospital = role === 'hospital';
+    const isBloodBank = role === 'bloodbank';
 
     if (isHospital) {
       if (!location.trim()) newErrors.location = 'Location is required';
       if (!contact.trim()) newErrors.contact = 'Contact number is required';
+    } else if (isBloodBank) {
+      // Blood bank shared fields
     } else {
       if (!bloodType) newErrors.bloodType = 'Blood type selection is required';
       if (!dob.trim()) newErrors.dob = 'Date of birth is required';
@@ -79,18 +84,24 @@ export const SignUpScreen: React.FC = () => {
 
     if (isHospital) {
       success = await signupHospital(name, email, location, contact);
-      if (success) {
-        navigation.replace('HospitalMain');
-      }
+    } else if (isBloodBank) {
+      // Mock blood bank setup in Context
+      success = await signupHospital(name, email, 'Central Depot', '555-0199');
     } else {
       success = await signupDonor(name, email, bloodType, dob, phone);
-      if (success) {
-        navigation.replace('DonorMain');
-      }
+    }
+
+    if (success) {
+      (navigation as any).navigate('OTPVerification', {
+        emailOrPhone: email,
+        flow: 'signup',
+        role,
+      });
     }
   };
 
   const isHospital = role === 'hospital';
+  const isBloodBank = role === 'bloodbank';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -100,8 +111,16 @@ export const SignUpScreen: React.FC = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={[styles.label, isHospital ? styles.hospLabel : styles.donorLabel]}>
-              {isHospital ? 'HOSPITAL CLINICAL ENROLLMENT' : 'VOLUNTEER DONOR REGISTRATION'}
+            <Text style={[
+              styles.label,
+              isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
+            ]}>
+              {isHospital 
+                ? 'HOSPITAL CLINICAL ENROLLMENT' 
+                : isBloodBank 
+                ? 'CENTRAL BLOOD BANK ENROLLMENT' 
+                : 'VOLUNTEER DONOR REGISTRATION'
+              }
             </Text>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>
@@ -203,7 +222,7 @@ export const SignUpScreen: React.FC = () => {
               title="Register Account"
               onPress={handleSignUp}
               loading={isLoading}
-              variant={isHospital ? 'primary' : 'secondary'}
+              variant={isHospital || isBloodBank ? 'primary' : 'secondary'}
               style={styles.button}
             />
           </View>

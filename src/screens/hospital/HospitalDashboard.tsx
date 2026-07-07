@@ -94,9 +94,20 @@ export const HospitalDashboard: React.FC = () => {
             {user?.name || 'Metro Health Medical Center'}
           </Text>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => (navigation as any).navigate('HospitalNotifications')}
+            style={styles.notifBtn}
+          >
+            <Ionicons name="notifications-outline" size={24} color={colors.primary} />
+            <View style={styles.notifBadge}>
+              <Text style={styles.notifBadgeText}>2</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+            <Text style={styles.logoutText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -341,5 +352,30 @@ const styles = StyleSheet.create({
     ...typography.styles.bodySm,
     color: colors.textMuted,
     marginTop: spacing.xs,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  notifBtn: {
+    position: 'relative',
+    padding: 4,
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: colors.secondary,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifBadgeText: {
+    color: colors.textLight,
+    fontSize: 9,
+    fontWeight: '700',
   },
 });

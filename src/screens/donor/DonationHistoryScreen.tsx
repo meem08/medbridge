@@ -59,7 +59,10 @@ export const DonationHistoryScreen: React.FC = () => {
 
   const renderDonationItem = ({ item }: { item: DonationItem }) => {
     return (
-      <Card style={styles.donationCard}>
+      <Card 
+        style={styles.donationCard}
+        onPress={() => (navigation as any).navigate('DonorHealthVerification', { donationId: item.id.toUpperCase() })}
+      >
         <View style={styles.cardHeader}>
           <View>
             <Text style={styles.cardDate}>{formatDate(item.date)}</Text>

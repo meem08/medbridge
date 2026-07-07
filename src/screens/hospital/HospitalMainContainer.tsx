@@ -3,6 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { HospitalDashboard } from './HospitalDashboard';
 import { BloodInventoryScreen } from './BloodInventoryScreen';
+import { HospitalProfileScreen } from './HospitalProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
 
 export const HospitalMainContainer: React.FC = () => {
@@ -14,6 +15,8 @@ export const HospitalMainContainer: React.FC = () => {
         return <HospitalDashboard />;
       case 1:
         return <BloodInventoryScreen />;
+      case 2:
+        return <HospitalProfileScreen />;
       default:
         return <HospitalDashboard />;
     }
@@ -55,6 +58,22 @@ export const HospitalMainContainer: React.FC = () => {
           />
           <Text style={[styles.navLabel, activeTab === 1 ? styles.navTextActiveHospital : null]}>
             Reserves
+          </Text>
+        </TouchableOpacity>
+
+        {/* Profile Tab */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setActiveTab(2)}
+          style={[styles.navTab, activeTab === 2 ? styles.navTabActiveHospital : null]}
+        >
+          <Ionicons
+            name={activeTab === 2 ? 'person' : 'person-outline'}
+            size={18}
+            color={activeTab === 2 ? colors.primary : colors.textSecondary}
+          />
+          <Text style={[styles.navLabel, activeTab === 2 ? styles.navTextActiveHospital : null]}>
+            Profile
           </Text>
         </TouchableOpacity>
       </View>
