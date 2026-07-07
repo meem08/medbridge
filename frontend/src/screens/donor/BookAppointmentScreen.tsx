@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Input } from '../../components/Input';
@@ -25,8 +26,8 @@ export const BookAppointmentScreen: React.FC = () => {
   const navigation = useNavigation();
 
   const [location, setLocation] = useState(LOCATIONS[0]);
-  const [date, setDate] = useState('2026-07-10');
-  const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[0]);
+  const [date, setDate] = useState('2026-07-08');
+  const [timeSlot, setTimeSlot] = useState(TIME_SLOTS[1]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBook = () => {
@@ -34,11 +35,16 @@ export const BookAppointmentScreen: React.FC = () => {
     // Simulate booking API call
     setTimeout(() => {
       setIsSubmitting(false);
-      Alert.alert(
-        'Appointment Confirmed',
-        `Thank you! Your donation is scheduled at:\n\n📍 ${location}\n📅 ${date} at ${timeSlot}\n\nPlease bring a valid ID and eat a light meal beforehand.`,
-        [{ text: 'Close', onPress: () => navigation.goBack() }]
-      );
+      if (Platform.OS === 'web') {
+        alert(`Appointment Confirmed\n\nThank you! Your donation is scheduled at:\n\n📍 ${location}\n📅 ${date} at ${timeSlot}\n\nPlease bring a valid ID and eat a light meal beforehand.`);
+        navigation.goBack();
+      } else {
+        Alert.alert(
+          'Appointment Confirmed',
+          `Thank you! Your donation is scheduled at:\n\n📍 ${location}\n📅 ${date} at ${timeSlot}\n\nPlease bring a valid ID and eat a light meal beforehand.`,
+          [{ text: 'Close', onPress: () => navigation.goBack() }]
+        );
+      }
     }, 1000);
   };
 

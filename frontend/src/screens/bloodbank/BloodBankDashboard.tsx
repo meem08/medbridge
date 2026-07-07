@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   Alert,
+  Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
@@ -24,7 +25,7 @@ interface RegionalRequest {
   hospital: string;
   urgency: 'urgent' | 'routine';
   time: string;
-  status: 'matching' | 'reserved' | 'complete';
+  status: 'matching' | 'reserved' | 'in-transit' | 'complete';
 }
 
 export const BloodBankDashboard: React.FC = () => {
@@ -38,53 +39,76 @@ export const BloodBankDashboard: React.FC = () => {
 
   const [requests, setRequests] = useState<RegionalRequest[]>([
     {
-      id: 'REQ-1234',
-      bloodType: 'O+',
+      id: 'REQ-8874',
+      bloodType: 'O-',
       units: 4,
-      hospital: 'City Hospital',
+      hospital: 'Central General Hospital',
       urgency: 'urgent',
-      time: 'Today, 09:00 AM',
+      time: '10 mins ago',
       status: 'matching',
     },
     {
-      id: 'REQ-1233',
+      id: 'REQ-8871',
       bloodType: 'A+',
       units: 2,
-      hospital: 'Survive Hospital',
+      hospital: 'Saint Jude Clinic',
       urgency: 'routine',
-      time: 'Today, 07:00 AM',
+      time: '1 hour ago',
       status: 'reserved',
     },
     {
-      id: 'REQ-1232',
+      id: 'REQ-8869',
       bloodType: 'B+',
-      units: 3,
-      hospital: 'Metro Hospital',
+      units: 5,
+      hospital: 'Westside Medical',
       urgency: 'urgent',
-      time: 'Yesterday, 10:00 AM',
+      time: '3 hours ago',
+      status: 'in-transit',
+    },
+    {
+      id: 'REQ-8865',
+      bloodType: 'O+',
+      units: 8,
+      hospital: 'City Childrens Ward',
+      urgency: 'routine',
+      time: '5 hours ago',
       status: 'complete',
     },
   ]);
 
   const handleAddRequest = () => {
-    Alert.alert('Simulate Request', 'Enter details for matching algorithm simulated dispatcher...', [
-      {
-        text: 'Dispatch O-',
-        onPress: () => {
-          const newReq: RegionalRequest = {
-            id: 'REQ-' + Math.floor(Math.random() * 10000),
-            bloodType: 'O-',
-            units: 3,
-            hospital: 'Central General Hospital',
-            urgency: 'urgent',
-            time: 'Just now',
-            status: 'matching',
-          };
-          setRequests((prev) => [newReq, ...prev]);
+    if (Platform.OS === 'web') {
+      const newReq: RegionalRequest = {
+        id: 'REQ-' + Math.floor(Math.random() * 10000),
+        bloodType: 'O-',
+        units: 3,
+        hospital: 'Central General Hospital',
+        urgency: 'urgent',
+        time: 'Just now',
+        status: 'matching',
+      };
+      setRequests((prev) => [newReq, ...prev]);
+      alert('Simulated O- Emergency Dispatch Request Added!');
+    } else {
+      Alert.alert('Simulate Request', 'Enter details for matching algorithm simulated dispatcher...', [
+        {
+          text: 'Dispatch O-',
+          onPress: () => {
+            const newReq: RegionalRequest = {
+              id: 'REQ-' + Math.floor(Math.random() * 10000),
+              bloodType: 'O-',
+              units: 3,
+              hospital: 'Central General Hospital',
+              urgency: 'urgent',
+              time: 'Just now',
+              status: 'matching',
+            };
+            setRequests((prev) => [newReq, ...prev]);
+          },
         },
-      },
-      { text: 'Cancel', style: 'cancel' },
-    ]);
+        { text: 'Cancel', style: 'cancel' },
+      ]);
+    }
   };
 
   const renderRequestItem = ({ item }: { item: RegionalRequest }) => {
@@ -101,9 +125,8 @@ export const BloodBankDashboard: React.FC = () => {
           </View>
         </View>
 
-        {/* Status Badge */}
-        <View style={[styles.statusBadge, styles[`statusBadge_${item.status}`]]}>
-          <Text style={[styles.statusBadgeText, styles[`statusBadgeText_${item.status}`]]}>
+        <View style={[styles.statusBadge, (styles as any)[`statusBadge_${item.status}`]]}>
+          <Text style={[styles.statusBadgeText, (styles as any)[`statusBadgeText_${item.status}`]]}>
             {item.status.toUpperCase()}
           </Text>
         </View>
@@ -475,6 +498,12 @@ const styles = StyleSheet.create({
   },
   statusBadgeText_complete: {
     color: colors.primary,
+  },
+  'statusBadge_in-transit': {
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+  },
+  'statusBadgeText_in-transit': {
+    color: '#d97706',
   },
   chatBotBtn: {
     flexDirection: 'row',

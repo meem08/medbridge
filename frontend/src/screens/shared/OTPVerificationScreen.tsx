@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Button } from '../../components/Button';
@@ -59,40 +60,64 @@ export const OTPVerificationScreen: React.FC = () => {
     setTimer(20);
     setIsResendActive(false);
     setCode([]);
-    Alert.alert('Code Resent', 'A new 4-digit verification code has been dispatched.');
+    if (Platform.OS === 'web') {
+      alert('Code Resent: A new 4-digit verification code has been dispatched.');
+    } else {
+      Alert.alert('Code Resent', 'A new 4-digit verification code has been dispatched.');
+    }
   };
 
   const handleVerify = () => {
     if (code.length < 4) {
-      Alert.alert('Incomplete Code', 'Please enter all 4 digits of the verification code.');
+      if (Platform.OS === 'web') {
+        alert('Incomplete Code: Please enter all 4 digits of the verification code.');
+      } else {
+        Alert.alert('Incomplete Code', 'Please enter all 4 digits of the verification code.');
+      }
       return;
     }
 
     const finalCode = code.join('');
     
     if (flow === 'reset') {
-      Alert.alert('Success', 'Password has been successfully reset. Please log in with your new credentials.', [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('Login', { role: role || 'donor' }),
-        },
-      ]);
+      if (Platform.OS === 'web') {
+        alert('Success: Password has been successfully reset. Please log in with your new credentials.');
+        navigation.navigate('Login', { role: role || 'donor' });
+      } else {
+        Alert.alert('Success', 'Password has been successfully reset. Please log in with your new credentials.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('Login', { role: role || 'donor' }),
+          },
+        ]);
+      }
     } else {
       // SignUp flow - redirect to appropriate dashboard
-      Alert.alert('Account Verified', 'Your registration is complete.', [
-        {
-          text: 'Continue',
-          onPress: () => {
-            if (role === 'hospital') {
-              navigation.replace('HospitalMain');
-            } else if (role === 'bloodbank') {
-              navigation.replace('BloodBankMain');
-            } else {
-              navigation.replace('DonorMain');
-            }
+      if (Platform.OS === 'web') {
+        alert('Account Verified: Your registration is complete.');
+        if (role === 'hospital') {
+          navigation.replace('HospitalMain');
+        } else if (role === 'bloodbank') {
+          navigation.replace('BloodBankMain');
+        } else {
+          navigation.replace('DonorMain');
+        }
+      } else {
+        Alert.alert('Account Verified', 'Your registration is complete.', [
+          {
+            text: 'Continue',
+            onPress: () => {
+              if (role === 'hospital') {
+                navigation.replace('HospitalMain');
+              } else if (role === 'bloodbank') {
+                navigation.replace('BloodBankMain');
+              } else {
+                navigation.replace('DonorMain');
+              }
+            },
           },
-        },
-      ]);
+        ]);
+      }
     }
   };
 
