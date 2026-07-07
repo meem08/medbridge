@@ -1,11 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { User, UserRole, Hospital, Donor, BloodBank } from '../models/user';
 
+const API_URL = 'http://localhost:5001/api';
+
 interface AuthContextType {
   user: User | null;
   role: UserRole | null;
   isLoading: boolean;
-  login: (email: string, role: UserRole) => Promise<boolean>;
+  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
   signupHospital: (name: string, email: string, location: string, contact: string) => Promise<boolean>;
   signupDonor: (name: string, email: string, bloodType: any, dob: string, phone: string) => Promise<boolean>;
   logout: () => void;
@@ -18,33 +20,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const login = async (email: string, selectedRole: UserRole): Promise<boolean> => {
+  const login = async (email: string, password: string, selectedRole: UserRole): Promise<boolean> => {
     setIsLoading(true);
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role: selectedRole }),
+      });
 
-    let mockName = 'Tinashe Pharaoh';
-    let mockId = 'donor_1';
-    
-    if (selectedRole === 'hospital') {
-      mockName = 'Metro Health Medical Center';
-      mockId = 'hosp_1';
-    } else if (selectedRole === 'bloodbank') {
-      mockName = 'LifeCare Blood Bank';
-      mockId = 'bb_1';
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        setUser(resData.data);
+        setRole(selectedRole);
+        setIsLoading(false);
+        return true;
+      } else {
+        alert(resData.message || 'Login failed');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err);
+      alert('Failed to connect to backend server. Make sure the server is running on port 5001.');
     }
-
-    const mockUser: User = {
-      id: mockId,
-      name: mockName,
-      email: email,
-      role: selectedRole,
-    };
-
-    setUser(mockUser);
-    setRole(selectedRole);
     setIsLoading(false);
-    return true;
+    return false;
   };
 
   const signupHospital = async (
@@ -54,22 +53,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     contact: string
   ): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password: 'password123',
+          role: 'hospital',
+          name,
+          location,
+          contactNumber: contact,
+        }),
+      });
 
-    const mockHospital: Hospital = {
-      id: 'hosp_' + Date.now(),
-      name,
-      email,
-      role: 'hospital',
-      location,
-      contactNumber: contact,
-      licenseNumber: 'HOSP-' + Math.floor(Math.random() * 100000),
-    };
-
-    setUser(mockHospital);
-    setRole('hospital');
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        setUser(resData.data);
+        setRole('hospital');
+        setIsLoading(false);
+        return true;
+      } else {
+        alert(resData.message || 'Signup failed');
+      }
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      alert('Failed to connect to backend server.');
+    }
     setIsLoading(false);
-    return true;
+    return false;
   };
 
   const signupDonor = async (
@@ -80,23 +92,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     phone: string
   ): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password: 'password123',
+          role: 'donor',
+          name,
+          bloodType,
+          dateOfBirth: dob,
+          contactNumber: phone,
+        }),
+      });
 
-    const mockDonor: Donor = {
-      id: 'donor_' + Date.now(),
-      name,
-      email,
-      role: 'donor',
-      bloodType,
-      dateOfBirth: dob,
-      phone,
-      isEligible: true,
-    };
-
-    setUser(mockDonor);
-    setRole('donor');
+      const resData = await response.json();
+      if (resData.success && resData.data) {
+        setUser(resData.data);
+        setRole('donor');
+        setIsLoading(false);
+        return true;
+      } else {
+        alert(resData.message || 'Signup failed');
+      }
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      alert('Failed to connect to backend server.');
+    }
     setIsLoading(false);
-    return true;
+    return false;
   };
 
   const logout = () => {

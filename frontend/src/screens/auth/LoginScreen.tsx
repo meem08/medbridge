@@ -60,7 +60,7 @@ export const LoginScreen: React.FC = () => {
     }
 
     if (isValid) {
-      const success = await login(email, role);
+      const success = await login(email, password, role);
       if (success) {
         if (role === 'hospital') {
           navigation.replace('HospitalMain');
