@@ -8,8 +8,8 @@ interface AuthContextType {
   role: UserRole | null;
   isLoading: boolean;
   login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  signupHospital: (name: string, email: string, location: string, contact: string) => Promise<boolean>;
-  signupDonor: (name: string, email: string, bloodType: any, dob: string, phone: string) => Promise<boolean>;
+  signupHospital: (name: string, email: string, password: string, location: string, contact: string) => Promise<boolean>;
+  signupDonor: (name: string, email: string, password: string, bloodType: any, dob: string, phone: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signupHospital = async (
     name: string,
     email: string,
+    password: string,
     location: string,
     contact: string
   ): Promise<boolean> => {
@@ -59,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          password: 'password123',
+          password,
           role: 'hospital',
           name,
           location,
@@ -87,6 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signupDonor = async (
     name: string,
     email: string,
+    password: string,
     bloodType: any,
     dob: string,
     phone: string
@@ -98,7 +100,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          password: 'password123',
+          password,
           role: 'donor',
           name,
           bloodType,

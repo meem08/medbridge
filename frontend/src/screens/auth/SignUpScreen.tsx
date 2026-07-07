@@ -83,12 +83,12 @@ export const SignUpScreen: React.FC = () => {
     let success = false;
 
     if (isHospital) {
-      success = await signupHospital(name, email, location, contact);
+      success = await signupHospital(name, email, password, location, contact);
     } else if (isBloodBank) {
       // Mock blood bank setup in Context
-      success = await signupHospital(name, email, 'Central Depot', '555-0199');
+      success = await signupHospital(name, email, password, 'Central Depot', '555-0199');
     } else {
-      success = await signupDonor(name, email, bloodType, dob, phone);
+      success = await signupDonor(name, email, password, bloodType, dob, phone);
     }
 
     if (success) {
