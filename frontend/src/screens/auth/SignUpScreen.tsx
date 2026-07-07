@@ -100,6 +100,10 @@ export const SignUpScreen: React.FC = () => {
     }
   };
 
+  const handleSignInRedirect = () => {
+    navigation.navigate('Login', { role });
+  };
+
   const isHospital = role === 'hospital';
   const isBloodBank = role === 'bloodbank';
 
@@ -226,6 +230,16 @@ export const SignUpScreen: React.FC = () => {
               style={styles.button}
             />
           </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account?</Text>
+            <Button
+              title="Sign In"
+              onPress={handleSignInRedirect}
+              variant="text"
+              textStyle={isHospital || isBloodBank ? styles.hospLink : styles.donorLink}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
       <AuthBottomBar activeTab="security" />
@@ -316,5 +330,25 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.md,
     width: '100%',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  footerText: {
+    ...typography.styles.bodySm,
+    color: colors.textSecondary,
+  },
+  hospLink: {
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  donorLink: {
+    color: colors.secondary,
+    fontWeight: '700',
   },
 });
