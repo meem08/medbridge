@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
@@ -13,6 +14,7 @@ import { Badge } from '../../components/Badge';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { formatDate } from '../../utils/formatters';
+import { useAuth } from '../../context/AuthContext';
 
 interface DonationItem {
   id: string;
@@ -24,38 +26,32 @@ interface DonationItem {
   pulse: string;       // Pulse rate
 }
 
-const MOCK_HISTORY: DonationItem[] = [
-  {
-    id: 'don_1',
-    date: '2026-03-12T10:30:00Z',
-    location: 'City Central Blood Bank',
-    units: 1,
-    bp: '118/76',
-    hemoglobin: '14.8 g/dL',
-    pulse: '72 bpm',
-  },
-  {
-    id: 'don_2',
-    date: '2025-11-04T09:15:00Z',
-    location: 'City Central Blood Bank',
-    units: 1,
-    bp: '120/80',
-    hemoglobin: '15.1 g/dL',
-    pulse: '68 bpm',
-  },
-  {
-    id: 'don_3',
-    date: '2025-07-20T14:00:00Z',
-    location: 'St. Jude Hospital Clinic',
-    units: 1,
-    bp: '115/78',
-    hemoglobin: '14.2 g/dL',
-    pulse: '75 bpm',
-  },
-];
+const API_URL = 'http://localhost:5001/api';
 
 export const DonationHistoryScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { user } = useAuth();
+  const [history, setHistory] = useState<DonationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!user?.id) return;
+      try {
+        const response = await fetch(`${API_URL}/donors/history/${user.id}`);
+        const resData = await response.json();
+        if (resData.success && resData.data) {
+          setHistory(resData.data);
+        }
+      } catch (err) {
+        console.error('Error fetching history:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [user]);
 
   const renderDonationItem = ({ item }: { item: DonationItem }) => {
     return (
@@ -105,18 +101,24 @@ export const DonationHistoryScreen: React.FC = () => {
         <View style={styles.placeholder} />
       </View>
 
-      <FlatList
-        data={MOCK_HISTORY}
-        renderItem={renderDonationItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <Card style={styles.emptyCard} navyHeaderLine={true}>
-            <Text style={styles.emptyText}>No donations recorded yet.</Text>
-            <Text style={styles.emptySub}>Your impact will show here once you donate.</Text>
-          </Card>
-        }
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.secondary} />
+        </View>
+      ) : (
+        <FlatList
+          data={history}
+          renderItem={renderDonationItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <Card style={styles.emptyCard} navyHeaderLine={true}>
+              <Text style={styles.emptyText}>No donations recorded yet.</Text>
+              <Text style={styles.emptySub}>Your impact will show here once you donate.</Text>
+            </Card>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };

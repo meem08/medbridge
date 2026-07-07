@@ -21,48 +21,18 @@ const BloodContext = createContext<BloodContextType | undefined>(undefined);
 
 // Initial Mock Inventory
 const initialInventory: BloodInventory = {
-  'O+': { bloodType: 'O+', units: 42, minRequired: 15, lastUpdated: new Date().toISOString() },
-  'O-': { bloodType: 'O-', units: 4, minRequired: 10, lastUpdated: new Date().toISOString() }, // LOW
-  'A+': { bloodType: 'A+', units: 28, minRequired: 15, lastUpdated: new Date().toISOString() },
-  'A-': { bloodType: 'A-', units: 9, minRequired: 10, lastUpdated: new Date().toISOString() },  // LOW
-  'B+': { bloodType: 'B+', units: 19, minRequired: 10, lastUpdated: new Date().toISOString() },
-  'B-': { bloodType: 'B-', units: 12, minRequired: 8, lastUpdated: new Date().toISOString() },
-  'AB+': { bloodType: 'AB+', units: 15, minRequired: 8, lastUpdated: new Date().toISOString() },
-  'AB-': { bloodType: 'AB-', units: 2, minRequired: 5, lastUpdated: new Date().toISOString() },  // LOW
+  'O+': { bloodType: 'O+', units: 0, minRequired: 15, lastUpdated: new Date().toISOString() },
+  'O-': { bloodType: 'O-', units: 0, minRequired: 10, lastUpdated: new Date().toISOString() },
+  'A+': { bloodType: 'A+', units: 0, minRequired: 15, lastUpdated: new Date().toISOString() },
+  'A-': { bloodType: 'A-', units: 0, minRequired: 10, lastUpdated: new Date().toISOString() },
+  'B+': { bloodType: 'B+', units: 0, minRequired: 10, lastUpdated: new Date().toISOString() },
+  'B-': { bloodType: 'B-', units: 0, minRequired: 8, lastUpdated: new Date().toISOString() },
+  'AB+': { bloodType: 'AB+', units: 0, minRequired: 8, lastUpdated: new Date().toISOString() },
+  'AB-': { bloodType: 'AB-', units: 0, minRequired: 5, lastUpdated: new Date().toISOString() },
 };
 
 // Initial Mock Requests
-const initialRequests: BloodRequest[] = [
-  {
-    id: 'req_1',
-    hospitalId: 'hosp_1',
-    hospitalName: 'St. Jude Hospital',
-    bloodType: 'O-',
-    units: 5,
-    urgency: 'critical',
-    status: 'in-transit',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    matchedDonorName: 'Sarah Jenkins',
-    matchedDonorId: 'donor_2',
-    eta: '12 mins',
-    deliveryLocation: 'St. Jude ER Department, Wing B',
-    notes: 'Emergency traffic accident victim, massive transfusion protocol initiated.',
-  },
-  {
-    id: 'req_2',
-    hospitalId: 'hosp_1',
-    hospitalName: 'St. Jude Hospital',
-    bloodType: 'A+',
-    units: 3,
-    urgency: 'normal',
-    status: 'delivered',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    matchedDonorName: 'David Lee',
-    matchedDonorId: 'donor_3',
-    deliveryLocation: 'St. Jude Blood Bank',
-    notes: 'Restocking safety buffer.',
-  },
-];
+const initialRequests: BloodRequest[] = [];
 
 const API_URL = 'http://localhost:5001/api';
 

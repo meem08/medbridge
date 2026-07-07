@@ -37,44 +37,7 @@ export const BloodBankDashboard: React.FC = () => {
     navigation.getParent()?.navigate('ChooseRole');
   };
 
-  const [requests, setRequests] = useState<RegionalRequest[]>([
-    {
-      id: 'REQ-8874',
-      bloodType: 'O-',
-      units: 4,
-      hospital: 'Central General Hospital',
-      urgency: 'urgent',
-      time: '10 mins ago',
-      status: 'matching',
-    },
-    {
-      id: 'REQ-8871',
-      bloodType: 'A+',
-      units: 2,
-      hospital: 'Saint Jude Clinic',
-      urgency: 'routine',
-      time: '1 hour ago',
-      status: 'reserved',
-    },
-    {
-      id: 'REQ-8869',
-      bloodType: 'B+',
-      units: 5,
-      hospital: 'Westside Medical',
-      urgency: 'urgent',
-      time: '3 hours ago',
-      status: 'in-transit',
-    },
-    {
-      id: 'REQ-8865',
-      bloodType: 'O+',
-      units: 8,
-      hospital: 'City Childrens Ward',
-      urgency: 'routine',
-      time: '5 hours ago',
-      status: 'complete',
-    },
-  ]);
+  const [requests, setRequests] = useState<RegionalRequest[]>([]);
 
   const handleAddRequest = () => {
     if (Platform.OS === 'web') {
