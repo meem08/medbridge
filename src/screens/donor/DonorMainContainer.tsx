@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { DonorDashboard } from './DonorDashboard';
 import { BookAppointmentScreen } from './BookAppointmentScreen';
 import { DonationHistoryScreen } from './DonationHistoryScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 export const DonorMainContainer: React.FC = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
@@ -34,9 +35,11 @@ export const DonorMainContainer: React.FC = () => {
           onPress={() => setActiveTab(0)}
           style={[styles.navTab, activeTab === 0 ? styles.navTabActiveDonor : null]}
         >
-          <Text style={[styles.navIcon, activeTab === 0 ? styles.navTextActiveDonor : null]}>
-            👤
-          </Text>
+          <Ionicons
+            name={activeTab === 0 ? 'person' : 'person-outline'}
+            size={18}
+            color={activeTab === 0 ? colors.secondary : colors.textSecondary}
+          />
           <Text style={[styles.navLabel, activeTab === 0 ? styles.navTextActiveDonor : null]}>
             Profile
           </Text>
@@ -48,9 +51,11 @@ export const DonorMainContainer: React.FC = () => {
           onPress={() => setActiveTab(1)}
           style={[styles.navTab, activeTab === 1 ? styles.navTabActiveDonor : null]}
         >
-          <Text style={[styles.navIcon, activeTab === 1 ? styles.navTextActiveDonor : null]}>
-            📅
-          </Text>
+          <Ionicons
+            name={activeTab === 1 ? 'calendar' : 'calendar-outline'}
+            size={18}
+            color={activeTab === 1 ? colors.secondary : colors.textSecondary}
+          />
           <Text style={[styles.navLabel, activeTab === 1 ? styles.navTextActiveDonor : null]}>
             Book
           </Text>
@@ -62,9 +67,11 @@ export const DonorMainContainer: React.FC = () => {
           onPress={() => setActiveTab(2)}
           style={[styles.navTab, activeTab === 2 ? styles.navTabActiveDonor : null]}
         >
-          <Text style={[styles.navIcon, activeTab === 2 ? styles.navTextActiveDonor : null]}>
-            📜
-          </Text>
+          <Ionicons
+            name={activeTab === 2 ? 'document-text' : 'document-text-outline'}
+            size={18}
+            color={activeTab === 2 ? colors.secondary : colors.textSecondary}
+          />
           <Text style={[styles.navLabel, activeTab === 2 ? styles.navTextActiveDonor : null]}>
             History
           </Text>
@@ -102,9 +109,6 @@ const styles = StyleSheet.create({
   },
   navTabActiveDonor: {
     backgroundColor: 'rgba(187, 0, 20, 0.08)', // Light Red background pill
-  },
-  navIcon: {
-    fontSize: 18,
   },
   navLabel: {
     ...typography.styles.labelSm,

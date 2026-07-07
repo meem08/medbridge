@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
 
 interface AuthBottomBarProps {
   activeTab?: 'help' | 'security' | 'info';
@@ -15,9 +16,11 @@ export const AuthBottomBar: React.FC<AuthBottomBarProps> = ({ activeTab = 'secur
         style={[styles.tab, activeTab === 'help' ? styles.tabActive : null]}
         onPress={() => {}}
       >
-        <Text style={[styles.tabIcon, activeTab === 'help' ? styles.tabTextActive : styles.tabTextInactive]}>
-          ❓
-        </Text>
+        <Ionicons
+          name="help-circle-outline"
+          size={18}
+          color={activeTab === 'help' ? colors.textLight : colors.textSecondary}
+        />
         <Text style={[styles.tabLabel, activeTab === 'help' ? styles.tabTextActive : styles.tabTextInactive]}>
           Help
         </Text>
@@ -29,9 +32,11 @@ export const AuthBottomBar: React.FC<AuthBottomBarProps> = ({ activeTab = 'secur
         style={[styles.tab, activeTab === 'security' ? styles.tabActive : null]}
         onPress={() => {}}
       >
-        <Text style={[styles.tabIcon, activeTab === 'security' ? styles.tabTextActive : styles.tabTextInactive]}>
-          🔒
-        </Text>
+        <Ionicons
+          name="lock-closed-outline"
+          size={16}
+          color={activeTab === 'security' ? colors.textLight : colors.textSecondary}
+        />
         <Text style={[styles.tabLabel, activeTab === 'security' ? styles.tabTextActive : styles.tabTextInactive]}>
           Security
         </Text>
@@ -43,9 +48,11 @@ export const AuthBottomBar: React.FC<AuthBottomBarProps> = ({ activeTab = 'secur
         style={[styles.tab, activeTab === 'info' ? styles.tabActive : null]}
         onPress={() => {}}
       >
-        <Text style={[styles.tabIcon, activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive]}>
-          ℹ️
-        </Text>
+        <Ionicons
+          name="information-circle-outline"
+          size={18}
+          color={activeTab === 'info' ? colors.textLight : colors.textSecondary}
+        />
         <Text style={[styles.tabLabel, activeTab === 'info' ? styles.tabTextActive : styles.tabTextInactive]}>
           Info
         </Text>
@@ -72,9 +79,6 @@ const styles = StyleSheet.create({
   tabActive: {
     backgroundColor: colors.secondary, // Highlight in Vibrant Red matching wireframe
   },
-  tabIcon: {
-    fontSize: 14,
-  },
   tabLabel: {
     ...typography.styles.labelSm,
     fontFamily: typography.fontFamilyLabel,
@@ -83,9 +87,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   tabTextActive: {
-    color: colors.textLight, // White text/icon when active
+    color: colors.textLight, // White text when active
   },
   tabTextInactive: {
-    color: colors.textSecondary, // Gray text/icon when inactive
+    color: colors.textSecondary, // Gray text when inactive
   },
 });

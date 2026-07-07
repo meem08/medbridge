@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { HospitalDashboard } from './HospitalDashboard';
 import { BloodInventoryScreen } from './BloodInventoryScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 export const HospitalMainContainer: React.FC = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
@@ -31,9 +32,11 @@ export const HospitalMainContainer: React.FC = () => {
           onPress={() => setActiveTab(0)}
           style={[styles.navTab, activeTab === 0 ? styles.navTabActiveHospital : null]}
         >
-          <Text style={[styles.navIcon, activeTab === 0 ? styles.navTextActiveHospital : null]}>
-            🏠
-          </Text>
+          <Ionicons
+            name={activeTab === 0 ? 'home' : 'home-outline'}
+            size={18}
+            color={activeTab === 0 ? colors.primary : colors.textSecondary}
+          />
           <Text style={[styles.navLabel, activeTab === 0 ? styles.navTextActiveHospital : null]}>
             Home
           </Text>
@@ -45,9 +48,11 @@ export const HospitalMainContainer: React.FC = () => {
           onPress={() => setActiveTab(1)}
           style={[styles.navTab, activeTab === 1 ? styles.navTabActiveHospital : null]}
         >
-          <Text style={[styles.navIcon, activeTab === 1 ? styles.navTextActiveHospital : null]}>
-            📊
-          </Text>
+          <Ionicons
+            name={activeTab === 1 ? 'stats-chart' : 'stats-chart-outline'}
+            size={18}
+            color={activeTab === 1 ? colors.primary : colors.textSecondary}
+          />
           <Text style={[styles.navLabel, activeTab === 1 ? styles.navTextActiveHospital : null]}>
             Reserves
           </Text>
@@ -85,9 +90,6 @@ const styles = StyleSheet.create({
   },
   navTabActiveHospital: {
     backgroundColor: 'rgba(0, 22, 59, 0.08)', // Light Navy background pill
-  },
-  navIcon: {
-    fontSize: 18,
   },
   navLabel: {
     ...typography.styles.labelSm,

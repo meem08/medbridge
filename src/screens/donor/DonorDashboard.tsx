@@ -10,6 +10,7 @@ import {
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useBlood } from '../../context/BloodContext';
 import { useNavigation } from '@react-navigation/native';
@@ -85,7 +86,9 @@ export const DonorDashboard: React.FC = () => {
         {/* Urgent Emergency Call to Action (Red warning style) */}
         {criticalRequests.length > 0 ? (
           <Card style={styles.alertCard} isLowStock={true}>
-            <Text style={styles.alertTitle}>🚨 IMMEDIATE ACTION REQUIRED</Text>
+            <Text style={styles.alertTitle}>
+              <Ionicons name="alert-circle-outline" size={18} color={colors.secondary} /> IMMEDIATE ACTION REQUIRED
+            </Text>
             <Text style={styles.alertDesc}>
               There are active emergency blood requests in your region. Your blood type (O Negative) is the universal donor type and is highly needed.
             </Text>

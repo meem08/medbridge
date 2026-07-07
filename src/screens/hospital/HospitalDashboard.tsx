@@ -12,6 +12,7 @@ import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useBlood } from '../../context/BloodContext';
 import { useNavigation } from '@react-navigation/native';
@@ -70,7 +71,7 @@ export const HospitalDashboard: React.FC = () => {
 
         <View style={styles.cardFooter}>
           <Text style={styles.locationText} numberOfLines={1}>
-            📍 {item.deliveryLocation}
+            <Ionicons name="location-outline" size={14} color={colors.textSecondary} /> {item.deliveryLocation}
           </Text>
           {item.eta ? (
             <Text style={styles.etaText}>ETA: {item.eta}</Text>
@@ -101,7 +102,9 @@ export const HospitalDashboard: React.FC = () => {
         {/* Low Inventory Alert Card (Vibrant Red Border) */}
         {lowStockItems.length > 0 ? (
           <Card style={styles.alertCard} isLowStock={true}>
-            <Text style={styles.alertTitle}>🚨 STOCK LEVEL WARNING</Text>
+            <Text style={styles.alertTitle}>
+              <Ionicons name="alert-circle-outline" size={18} color={colors.secondary} /> STOCK LEVEL WARNING
+            </Text>
             <Text style={styles.alertDesc}>
               {lowStockItems.length} blood types are currently below emergency safety thresholds:
             </Text>

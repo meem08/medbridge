@@ -10,6 +10,7 @@ import {
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { formatDate } from '../../utils/formatters';
 
@@ -62,7 +63,9 @@ export const DonationHistoryScreen: React.FC = () => {
         <View style={styles.cardHeader}>
           <View>
             <Text style={styles.cardDate}>{formatDate(item.date)}</Text>
-            <Text style={styles.cardLocation}>📍 {item.location}</Text>
+            <Text style={styles.cardLocation}>
+              <Ionicons name="location-outline" size={12} color={colors.textSecondary} /> {item.location}
+            </Text>
           </View>
           <Badge type="success" label="SUCCESSFUL" />
         </View>
