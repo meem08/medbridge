@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Card } from '../../components/Card';
@@ -23,14 +24,68 @@ type RootStackParamList = {
 type VerificationRouteProp = RouteProp<RootStackParamList, 'DonorHealthVerification'>;
 type NavigationProp = StackNavigationProp<RootStackParamList, 'DonorHealthVerification'>;
 
+import { useAuth } from '../../context/AuthContext';
+
+const API_URL = 'http://localhost:5001/api';
+
 export const DonorHealthVerificationScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<VerificationRouteProp>();
   const { donationId } = route.params;
+  const { user } = useAuth();
+
+  const [donation, setDonation] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchDonationDetails = async () => {
+      if (!user?.id || !donationId) return;
+      try {
+        const response = await fetch(`${API_URL}/donors/history/${user.id}`);
+        const resData = await response.json();
+        if (resData.success && resData.data) {
+          const match = resData.data.find((d: any) => d.id.toLowerCase() === donationId.toLowerCase());
+          setDonation(match);
+        }
+      } catch (err) {
+        console.error('Error fetching donation details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDonationDetails();
+  }, [user, donationId]);
 
   const handleDownloadCertificate = () => {
     Alert.alert('Download Complete', 'Your verified donation certificate has been saved to your files.');
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.secondary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (!donation) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Verification</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.xl }}>
+          <Text style={styles.sectionTitle}>Record Not Found</Text>
+          <Text style={styles.donorMeta}>We couldn't retrieve the health record for this donation.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -59,9 +114,9 @@ export const DonorHealthVerificationScreen: React.FC = () => {
               <Ionicons name="person" size={32} color={colors.primary} />
             </View>
             <View>
-              <Text style={styles.donorName}>Ada Pharaoh</Text>
-              <Text style={styles.donorId}>DON - 547</Text>
-              <Text style={styles.donorMeta}>O- • 29 Years • Female</Text>
+              <Text style={styles.donorName}>{user?.name || 'Donor'}</Text>
+              <Text style={styles.donorId}>DON - {donation.id.replace('DON-', '')}</Text>
+              <Text style={styles.donorMeta}>{(user as any)?.bloodType || 'Universal'} Donor • Verified Profile</Text>
             </View>
           </View>
         </Card>
@@ -72,15 +127,15 @@ export const DonorHealthVerificationScreen: React.FC = () => {
           <View style={styles.specsList}>
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Donation ID</Text>
-              <Text style={styles.specValue}>{donationId || 'DON-5477'}</Text>
+              <Text style={styles.specValue}>{donation.id}</Text>
             </View>
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Date</Text>
-              <Text style={styles.specValue}>{formatDate('2026-03-14')}</Text>
+              <Text style={styles.specValue}>{formatDate(donation.date)}</Text>
             </View>
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Venue</Text>
-              <Text style={styles.specValue}>Central General Hospital</Text>
+              <Text style={styles.specValue}>{donation.location}</Text>
             </View>
             <View style={[styles.specRow, styles.lastRow]}>
               <Text style={styles.specLabel}>Status</Text>
@@ -96,7 +151,7 @@ export const DonorHealthVerificationScreen: React.FC = () => {
           <View style={styles.vitalItem}>
             <View>
               <Text style={styles.vitalName}>Hemoglobin Level</Text>
-              <Text style={styles.vitalValue}>14.5 g/dl</Text>
+              <Text style={styles.vitalValue}>{donation.hemoglobin}</Text>
             </View>
             <View style={styles.passBadge}>
               <Text style={styles.passBadgeText}>PASS</Text>
@@ -106,7 +161,7 @@ export const DonorHealthVerificationScreen: React.FC = () => {
           <View style={styles.vitalItem}>
             <View>
               <Text style={styles.vitalName}>Blood Pressure</Text>
-              <Text style={styles.vitalValue}>120/80 mmHg</Text>
+              <Text style={styles.vitalValue}>{donation.bp} mmHg</Text>
             </View>
             <View style={styles.passBadge}>
               <Text style={styles.passBadgeText}>PASS</Text>
@@ -115,8 +170,8 @@ export const DonorHealthVerificationScreen: React.FC = () => {
 
           <View style={styles.vitalItem}>
             <View>
-              <Text style={styles.vitalName}>Weight</Text>
-              <Text style={styles.vitalValue}>68 kg</Text>
+              <Text style={styles.vitalName}>Pulse Rate</Text>
+              <Text style={styles.vitalValue}>{donation.pulse}</Text>
             </View>
             <View style={styles.passBadge}>
               <Text style={styles.passBadgeText}>PASS</Text>
@@ -125,8 +180,8 @@ export const DonorHealthVerificationScreen: React.FC = () => {
 
           <View style={[styles.vitalItem, styles.lastRow]}>
             <View>
-              <Text style={styles.vitalName}>Body Temperature</Text>
-              <Text style={styles.vitalValue}>36.6 °C</Text>
+              <Text style={styles.vitalName}>Donation Volume</Text>
+              <Text style={styles.vitalValue}>{donation.units} Unit</Text>
             </View>
             <View style={styles.passBadge}>
               <Text style={styles.passBadgeText}>PASS</Text>

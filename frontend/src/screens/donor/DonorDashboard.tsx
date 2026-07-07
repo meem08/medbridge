@@ -48,7 +48,7 @@ export const DonorDashboard: React.FC = () => {
         <View>
           <Text style={styles.welcomeText}>DONOR PORTAL</Text>
           <Text style={styles.donorName} numberOfLines={1}>
-            {user?.name || 'Tinashe Pharaoh'}
+            {user?.name}
           </Text>
         </View>
         <View style={styles.headerActions}>

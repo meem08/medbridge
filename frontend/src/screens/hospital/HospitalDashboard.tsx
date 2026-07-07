@@ -91,7 +91,7 @@ export const HospitalDashboard: React.FC = () => {
         <View>
           <Text style={styles.welcomeText}>CLINICAL PORTAL</Text>
           <Text style={styles.hospitalName} numberOfLines={1}>
-            {user?.name || 'Metro Health Medical Center'}
+            {user?.name}
           </Text>
         </View>
         <View style={styles.headerActions}>

@@ -104,7 +104,7 @@ export const BloodBankDashboard: React.FC = () => {
         <View>
           <Text style={styles.headerLabel}>COORDINATION CORE</Text>
           <Text style={styles.headerName} numberOfLines={1}>
-            {user?.name || 'LifeCare Blood Bank'}
+            {user?.name}
           </Text>
         </View>
         <View style={styles.headerActions}>
