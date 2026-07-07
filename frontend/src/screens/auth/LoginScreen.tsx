@@ -17,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { validateEmail } from '../../utils/validators';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { AlertModal } from '../../components/AlertModal';
 
 type RootStackParamList = {
   ChooseRole: undefined;
@@ -42,17 +43,45 @@ export const LoginScreen: React.FC = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+    });
+  };
+
   const handleLogin = async () => {
     let isValid = true;
     
-    if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email address');
+    if (!email) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Please enter a valid email');
       isValid = false;
     } else {
       setEmailError('');
     }
 
-    if (password.length < 6) {
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (password.length < 6) {
       setPasswordError('Password must be at least 6 characters');
       isValid = false;
     } else {
@@ -60,15 +89,19 @@ export const LoginScreen: React.FC = () => {
     }
 
     if (isValid) {
-      const success = await login(email, password, role);
-      if (success) {
-        if (role === 'hospital') {
-          navigation.replace('HospitalMain');
-        } else if (role === 'bloodbank') {
-          navigation.replace('BloodBankMain');
-        } else {
-          navigation.replace('DonorMain');
+      try {
+        const success = await login(email, password, role);
+        if (success) {
+          if (role === 'hospital') {
+            navigation.replace('HospitalMain');
+          } else if (role === 'bloodbank') {
+            navigation.replace('BloodBankMain');
+          } else {
+            navigation.replace('DonorMain');
+          }
         }
+      } catch (err: any) {
+        showAlert('Authentication Failed', err.message, 'error');
       }
     }
   };
@@ -161,6 +194,14 @@ export const LoginScreen: React.FC = () => {
         </ScrollView>
       </KeyboardAvoidingView>
       <AuthBottomBar activeTab="security" />
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+      />
     </SafeAreaView>
   );
 };

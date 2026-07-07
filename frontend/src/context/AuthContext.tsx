@@ -36,14 +36,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
         return true;
       } else {
-        alert(resData.message || 'Login failed');
+        setIsLoading(false);
+        throw new Error(resData.message || 'Invalid email or password');
       }
     } catch (err: any) {
       console.error('Login error:', err);
-      alert('Failed to connect to backend server. Make sure the server is running on port 5001.');
+      setIsLoading(false);
+      throw new Error(err.message || 'Failed to connect to backend server. Make sure the server is running on port 5001.');
     }
-    setIsLoading(false);
-    return false;
   };
 
   const signupHospital = async (
@@ -75,14 +75,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
         return true;
       } else {
-        alert(resData.message || 'Signup failed');
+        setIsLoading(false);
+        throw new Error(resData.message || 'Signup failed');
       }
     } catch (err: any) {
       console.error('Signup error:', err);
-      alert('Failed to connect to backend server.');
+      setIsLoading(false);
+      throw new Error(err.message || 'Failed to connect to backend server.');
     }
-    setIsLoading(false);
-    return false;
   };
 
   const signupDonor = async (
@@ -116,14 +116,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
         return true;
       } else {
-        alert(resData.message || 'Signup failed');
+        setIsLoading(false);
+        throw new Error(resData.message || 'Signup failed');
       }
     } catch (err: any) {
       console.error('Signup error:', err);
-      alert('Failed to connect to backend server.');
+      setIsLoading(false);
+      throw new Error(err.message || 'Failed to connect to backend server.');
     }
-    setIsLoading(false);
-    return false;
   };
 
   const logout = () => {

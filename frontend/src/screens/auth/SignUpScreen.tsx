@@ -17,6 +17,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BloodType } from '../../models/user';
+import { AlertModal } from '../../components/AlertModal';
 
 type RootStackParamList = {
   Login: { role: 'hospital' | 'donor' | 'bloodbank' };
@@ -53,6 +54,28 @@ export const SignUpScreen: React.FC = () => {
   // Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Custom alert modal config state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info',
+  });
+
+  const showAlert = (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    setAlertConfig({
+      visible: true,
+      title,
+      message,
+      type,
+    });
+  };
+
   const handleSignUp = async () => {
     const newErrors: Record<string, string> = {};
 
@@ -82,21 +105,25 @@ export const SignUpScreen: React.FC = () => {
     setErrors({});
     let success = false;
 
-    if (isHospital) {
-      success = await signupHospital(name, email, password, location, contact);
-    } else if (isBloodBank) {
-      // Mock blood bank setup in Context
-      success = await signupHospital(name, email, password, 'Central Depot', '555-0199');
-    } else {
-      success = await signupDonor(name, email, password, bloodType, dob, phone);
-    }
+    try {
+      if (isHospital) {
+        success = await signupHospital(name, email, password, location, contact);
+      } else if (isBloodBank) {
+        // Mock blood bank setup in Context
+        success = await signupHospital(name, email, password, 'Central Depot', '555-0199');
+      } else {
+        success = await signupDonor(name, email, password, bloodType, dob, phone);
+      }
 
-    if (success) {
-      (navigation as any).navigate('OTPVerification', {
-        emailOrPhone: email,
-        flow: 'signup',
-        role,
-      });
+      if (success) {
+        (navigation as any).navigate('OTPVerification', {
+          emailOrPhone: email,
+          flow: 'signup',
+          role,
+        });
+      }
+    } catch (err: any) {
+      showAlert('Registration Failed', err.message, 'error');
     }
   };
 
@@ -243,6 +270,14 @@ export const SignUpScreen: React.FC = () => {
         </ScrollView>
       </KeyboardAvoidingView>
       <AuthBottomBar activeTab="security" />
+
+      <AlertModal
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={() => setAlertConfig((prev) => ({ ...prev, visible: false }))}
+      />
     </SafeAreaView>
   );
 };
