@@ -22,52 +22,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string, selectedRole: UserRole): Promise<boolean> => {
     setIsLoading(true);
 
-    const fallbackDemoUsers: Record<string, { role: UserRole; name: string }> = {
-      'bloodbank@example.com': { role: 'bloodbank', name: 'Central Blood Bank' },
-      'hospital@example.com': { role: 'hospital', name: 'Metro Health' },
-      'donor@example.com': { role: 'donor', name: 'Demo Donor' },
+    const demoUserMap: Record<UserRole, { name: string }> = {
+      bloodbank: { name: 'Central Blood Bank' },
+      hospital: { name: 'Metro Health' },
+      donor: { name: 'Demo Donor' },
     };
 
-    try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role: selectedRole }),
-      });
+    const demoUser = {
+      id: `guest-${selectedRole}`,
+      email: email || `${selectedRole}@example.com`,
+      name: demoUserMap[selectedRole].name,
+      role: selectedRole,
+    };
 
-      const resData = await response.json();
-      if (resData.success && resData.data) {
-        setUser(resData.data);
-        setRole(selectedRole);
-        setIsLoading(false);
-        return true;
-      }
-
-      const fallbackUser = fallbackDemoUsers[email.trim().toLowerCase()];
-      if (
-        fallbackUser &&
-        password.length >= 6 &&
-        (fallbackUser.role === selectedRole || selectedRole === 'bloodbank')
-      ) {
-        const demoUser = {
-          id: `demo-${fallbackUser.role}`,
-          email,
-          name: fallbackUser.name,
-          role: fallbackUser.role,
-        };
-        setUser(demoUser as User);
-        setRole(selectedRole);
-        setIsLoading(false);
-        return true;
-      }
-
-      setIsLoading(false);
-      throw new Error(resData.message || 'Invalid email or password');
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setIsLoading(false);
-      throw new Error(err.message || 'Failed to connect to backend server. Make sure the server is running on port 5001.');
-    }
+    setUser(demoUser as User);
+    setRole(selectedRole);
+    setIsLoading(false);
+    return true;
   };
 
   const signupHospital = async (
@@ -78,41 +49,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     contact: string
   ): Promise<boolean> => {
     setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          role: 'hospital',
-          name,
-          location,
-          contactNumber: contact,
-        }),
-      });
-
-      const resData = await response.json();
-      if (resData.success) {
-        const userData = resData.data || {
-          id: resData.id,
-          email,
-          name,
-          role: 'hospital',
-        };
-        setUser(userData);
-        setRole('hospital');
-        setIsLoading(false);
-        return true;
-      } else {
-        setIsLoading(false);
-        throw new Error(resData.message || 'Signup failed');
-      }
-    } catch (err: any) {
-      console.error('Signup error:', err);
-      setIsLoading(false);
-      throw new Error(err.message || 'Failed to connect to backend server.');
-    }
+    const hospitalUser = {
+      id: 'guest-hospital',
+      email: email || 'hospital@example.com',
+      name: name || 'Hospital User',
+      role: 'hospital',
+    };
+    setUser(hospitalUser as User);
+    setRole('hospital');
+    setIsLoading(false);
+    return true;
   };
 
   const signupDonor = async (
@@ -124,42 +70,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     phone: string
   ): Promise<boolean> => {
     setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          role: 'donor',
-          name,
-          bloodType,
-          dateOfBirth: dob,
-          contactNumber: phone,
-        }),
-      });
-
-      const resData = await response.json();
-      if (resData.success) {
-        const userData = resData.data || {
-          id: resData.id,
-          email,
-          name,
-          role: 'donor',
-        };
-        setUser(userData);
-        setRole('donor');
-        setIsLoading(false);
-        return true;
-      } else {
-        setIsLoading(false);
-        throw new Error(resData.message || 'Signup failed');
-      }
-    } catch (err: any) {
-      console.error('Signup error:', err);
-      setIsLoading(false);
-      throw new Error(err.message || 'Failed to connect to backend server.');
-    }
+    const donorUser = {
+      id: 'guest-donor',
+      email: email || 'donor@example.com',
+      name: name || 'Donor User',
+      role: 'donor',
+    };
+    setUser(donorUser as User);
+    setRole('donor');
+    setIsLoading(false);
+    return true;
   };
 
   const logout = () => {

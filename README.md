@@ -16,18 +16,28 @@ git clone https://github.com/meem08/medbridge.git
 cd medbridge
 ```
 
-### 2. Install Dependencies
-Due to React 19 peer dependencies with Expo Web support, install packages with the legacy resolution flag:
+### 2. Install Frontend Dependencies
+The Expo app is in the frontend folder. Due to React 19 peer dependencies with Expo Web support, install packages there with the legacy resolution flag:
 ```bash
+cd frontend
 npm install --legacy-peer-deps
 ```
 
 ### 3. Run the Web Application
-Start the development server targeting your web browser:
+Start the development server from the frontend folder targeting your web browser:
 ```bash
+cd frontend
 npm run web
 ```
 This will compile the assets and open the application in Google Chrome or your default web browser (typically at `http://localhost:8081`).
+
+### 4. Optional: Start the Backend
+If you also want the API server running, open a second terminal and install/run it from the backend folder:
+```bash
+cd backend
+npm install
+npm run dev
+```
 
 ---
 

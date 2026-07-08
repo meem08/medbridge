@@ -51,8 +51,24 @@ const linking = {
       Splash: '',                      // Root path maps to Splash Screen
       Onboarding: 'onboarding',
       ChooseRole: 'welcome',
-      Login: 'login',
-      SignUp: 'signup',
+      Login: {
+        path: 'login',
+        parse: {
+          role: (role: string) =>
+            role === 'hospital' || role === 'donor' || role === 'bloodbank'
+              ? role
+              : 'donor',
+        },
+      },
+      SignUp: {
+        path: 'signup',
+        parse: {
+          role: (role: string) =>
+            role === 'hospital' || role === 'donor' || role === 'bloodbank'
+              ? role
+              : 'donor',
+        },
+      },
       ForgotPassword: 'forgot-password',
       OTPVerification: 'verify-otp',
       HospitalMain: 'hospital',

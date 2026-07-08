@@ -15,15 +15,15 @@ import { Button } from '../../components/Button';
 import { AuthBottomBar } from '../../components/AuthBottomBar';
 import { useAuth } from '../../context/AuthContext';
 import { validateEmail } from '../../utils/validators';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AlertModal } from '../../components/AlertModal';
 import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   ChooseRole: undefined;
-  Login: { role: 'hospital' | 'donor' | 'bloodbank' };
-  SignUp: { role: 'hospital' | 'donor' | 'bloodbank' };
+  Login: { role?: 'hospital' | 'donor' | 'bloodbank' };
+  SignUp: { role?: 'hospital' | 'donor' | 'bloodbank' };
   ForgotPassword: any;
   HospitalMain: undefined;
   DonorMain: undefined;
@@ -31,10 +31,11 @@ type RootStackParamList = {
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+type LoginRouteProp = RouteProp<RootStackParamList, 'Login'>;
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<any>();
+  const route = useRoute<LoginRouteProp>();
 
   const getRoleFromQuery = () => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -47,12 +48,17 @@ export const LoginScreen: React.FC = () => {
     return null;
   };
 
-  const role = useMemo(() => {
-    return route.params?.role || getRoleFromQuery() || 'donor';
+  const [role, setRole] = useState<'hospital' | 'donor' | 'bloodbank'>(
+    () => route.params?.role || getRoleFromQuery() || 'donor'
+  );
+
+  React.useEffect(() => {
+    const resolvedRole = route.params?.role || getRoleFromQuery() || 'donor';
+    setRole(resolvedRole);
   }, [route.params?.role]);
-  
+
   const { login, isLoading } = useAuth();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -81,43 +87,19 @@ export const LoginScreen: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    let isValid = true;
-    
-    if (!email) {
-      setEmailError('Email is required');
-      isValid = false;
-    } else if (!validateEmail(email)) {
-      setEmailError('Please enter a valid email');
-      isValid = false;
-    } else {
-      setEmailError('');
-    }
-
-    if (!password) {
-      setPasswordError('Password is required');
-      isValid = false;
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      isValid = false;
-    } else {
-      setPasswordError('');
-    }
-
-    if (isValid) {
-      try {
-        const success = await login(email, password, role);
-        if (success) {
-          if (role === 'hospital') {
-            navigation.replace('HospitalMain');
-          } else if (role === 'bloodbank') {
-            navigation.replace('BloodBankMain');
-          } else {
-            navigation.replace('DonorMain');
-          }
+    try {
+      const success = await login(email, password, role);
+      if (success) {
+        if (role === 'hospital') {
+          navigation.replace('HospitalMain');
+        } else if (role === 'bloodbank') {
+          navigation.replace('BloodBankMain');
+        } else {
+          navigation.replace('DonorMain');
         }
-      } catch (err: any) {
-        showAlert('Authentication Failed', err.message, 'error');
       }
+    } catch (err: any) {
+      showAlert('Authentication Failed', err.message, 'error');
     }
   };
 
@@ -149,14 +131,14 @@ export const LoginScreen: React.FC = () => {
             </TouchableOpacity>
             <View style={styles.headerContent}>
               <Text style={[
-                styles.label, 
+                styles.label,
                 isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
               ]}>
-                {isHospital 
-                  ? 'HOSPITAL CLINICAL PORTAL' 
-                  : isBloodBank 
-                  ? 'CENTRAL BLOOD BANK PORTAL' 
-                  : 'VOLUNTEER DONOR PORTAL'
+                {isHospital
+                  ? 'HOSPITAL CLINICAL PORTAL'
+                  : isBloodBank
+                    ? 'CENTRAL BLOOD BANK PORTAL'
+                    : 'VOLUNTEER DONOR PORTAL'
                 }
               </Text>
               <Text style={styles.title}>Welcome Back</Text>
@@ -192,7 +174,7 @@ export const LoginScreen: React.FC = () => {
             />
 
             {/* Forgot Password Link */}
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => (navigation as any).navigate('ForgotPassword')}
               style={styles.forgotPasswordContainer}
             >

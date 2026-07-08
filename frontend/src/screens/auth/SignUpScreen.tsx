@@ -78,38 +78,13 @@ export const SignUpScreen: React.FC = () => {
   };
 
   const handleSignUp = async () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!name.trim()) newErrors.name = 'Name is required';
-    if (!email.includes('@')) newErrors.email = 'Valid email is required';
-    if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-
-    const isHospital = role === 'hospital';
-    const isBloodBank = role === 'bloodbank';
-
-    if (isHospital) {
-      if (!location.trim()) newErrors.location = 'Location is required';
-      if (!contact.trim()) newErrors.contact = 'Contact number is required';
-    } else if (isBloodBank) {
-      // Blood bank shared fields
-    } else {
-      if (!bloodType) newErrors.bloodType = 'Blood type selection is required';
-      if (!dob.trim()) newErrors.dob = 'Date of birth is required';
-      if (!phone.trim()) newErrors.phone = 'Phone number is required';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
     setErrors({});
     let success = false;
 
     try {
-      if (isHospital) {
+      if (role === 'hospital') {
         success = await signupHospital(name, email, password, location, contact);
-      } else if (isBloodBank) {
+      } else if (role === 'bloodbank') {
         // Mock blood bank setup in Context
         success = await signupHospital(name, email, password, 'Central Depot', '555-0199');
       } else {
@@ -159,11 +134,11 @@ export const SignUpScreen: React.FC = () => {
                 styles.label,
                 isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
               ]}>
-                {isHospital 
-                  ? 'HOSPITAL CLINICAL ENROLLMENT' 
-                  : isBloodBank 
-                  ? 'CENTRAL BLOOD BANK ENROLLMENT' 
-                  : 'VOLUNTEER DONOR REGISTRATION'
+                {isHospital
+                  ? 'HOSPITAL CLINICAL ENROLLMENT'
+                  : isBloodBank
+                    ? 'CENTRAL BLOOD BANK ENROLLMENT'
+                    : 'VOLUNTEER DONOR REGISTRATION'
                 }
               </Text>
               <Text style={styles.title}>Create Account</Text>
