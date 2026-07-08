@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { validateEmail } from '../../utils/validators';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AlertModal } from '../../components/AlertModal';
+import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   ChooseRole: undefined;
@@ -34,7 +35,21 @@ type NavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<any>();
-  const { role } = route.params || { role: 'donor' };
+
+  const getRoleFromQuery = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const roleFromQuery = params.get('role');
+      if (roleFromQuery === 'hospital' || roleFromQuery === 'donor' || roleFromQuery === 'bloodbank') {
+        return roleFromQuery;
+      }
+    }
+    return null;
+  };
+
+  const role = useMemo(() => {
+    return route.params?.role || getRoleFromQuery() || 'donor';
+  }, [route.params?.role]);
   
   const { login, isLoading } = useAuth();
   
@@ -106,6 +121,14 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('ChooseRole');
+    }
+  };
+
   const handleSignUpRedirect = () => {
     navigation.navigate('SignUp', { role });
   };
@@ -121,21 +144,26 @@ export const LoginScreen: React.FC = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={[
-              styles.label, 
-              isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
-            ]}>
-              {isHospital 
-                ? 'HOSPITAL CLINICAL PORTAL' 
-                : isBloodBank 
-                ? 'CENTRAL BLOOD BANK PORTAL' 
-                : 'VOLUNTEER DONOR PORTAL'
-              }
-            </Text>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>
-              Sign in to manage and coordinate emergency blood requests.
-            </Text>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <View style={styles.headerContent}>
+              <Text style={[
+                styles.label, 
+                isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
+              ]}>
+                {isHospital 
+                  ? 'HOSPITAL CLINICAL PORTAL' 
+                  : isBloodBank 
+                  ? 'CENTRAL BLOOD BANK PORTAL' 
+                  : 'VOLUNTEER DONOR PORTAL'
+                }
+              </Text>
+              <Text style={styles.title}>Welcome Back</Text>
+              <Text style={styles.subtitle}>
+                Sign in to manage and coordinate emergency blood requests.
+              </Text>
+            </View>
           </View>
 
           <View style={styles.form}>
@@ -221,6 +249,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.xl,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  headerContent: {
+    flex: 1,
   },
   label: {
     ...typography.styles.labelSm,

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, Platform, Pressable } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -15,68 +15,149 @@ export const SplashScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('Onboarding');
-    }, 2000);
+    if (Platform.OS !== 'web') {
+      return;
+    }
 
-    return () => clearTimeout(timer);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        navigation.navigate('Onboarding');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigation]);
 
+  const handleContinue = () => {
+    navigation.navigate('Onboarding');
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        {/* MedBridge Official Logo Image */}
-        <Image
-          source={{
-            uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBNZaXoL5h2cDiiq-I4LHX-_YAhiujl3ROYl-5hPTZAXoM3_QPZ8aVtl0FivkB07cwZLI73vlTa-9VHUluQEQQp8AeFYkKR4A-KZRlmo89O8PR_q0QURZWAUwXo7Ki1pRJlNZCt_Gc1NUV_u9kWy9yhjK6e2TY54kbtRNz5JlW4ktfPnY-YWFMvwrLpnE1V_HTwHvCs-oseZ9onHBaLZiF9jqMio7Y0by6Jld1vd9QPEYkjc2z_WFTyGWIH8GYct1_09Il7AXmkMCg',
-          }}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>
-          MedBridge <Text style={styles.titleAccent}>AI</Text>
-        </Text>
-        <Text style={styles.subtitle}>Connecting Donors, Saving Lives</Text>
+    <Pressable style={styles.container} onPress={handleContinue}>
+      <Image
+        source={require('../../../assets/splash-icon.png')}
+        style={styles.backgroundImage}
+        resizeMode="contain"
+      />
+      <View style={styles.overlay} />
+      <View style={styles.blueTint} />
+      <View style={styles.redTint} />
+      <View style={styles.whiteTint} />
+      <View style={styles.content}>
+        <Text style={styles.title}>MedBridge</Text>
+        <Text style={styles.subtitle}>Connecting donors, saving lives</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>Press Enter to continue</Text>
+        </View>
       </View>
 
-      <ActivityIndicator size="small" color={colors.secondary} style={styles.loader} />
-    </View>
+      <ActivityIndicator size="small" color={colors.textLight} style={styles.loader} />
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff', // Sterile white background
+    backgroundColor: '#f7f9ff',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logoContainer: {
-    alignItems: 'center',
-    paddingBottom: 32, // Slight upward shift
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
-  logo: {
-    width: 200,
-    height: 80,
-    marginBottom: spacing.md,
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+  },
+  blueTint: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: '60%',
+    backgroundColor: 'rgba(0, 86, 179, 0.14)',
+  },
+  redTint: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '42%',
+    backgroundColor: 'rgba(200, 31, 39, 0.12)',
+  },
+  whiteTint: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '24%',
+    backgroundColor: 'rgba(255,255,255,0.20)',
+  },
+  content: {
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: spacing.containerPadding,
+    paddingBottom: 88,
+    flex: 1,
+    width: '100%',
   },
   title: {
     ...typography.styles.headlineXl,
     fontFamily: typography.fontFamily,
-    color: colors.primary, // Deep Navy (#00163b)
-  },
-  titleAccent: {
-    color: colors.secondary, // Vibrant Red (#bb0014)
+    color: '#8d0010',
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    fontSize: 34,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+    textShadowColor: 'rgba(0,0,0,0.18)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   subtitle: {
     ...typography.styles.labelMd,
     fontFamily: typography.fontFamilyLabel,
-    color: colors.textMuted,
+    color: '#8d0010',
     marginTop: spacing.xs,
     textTransform: 'uppercase',
+    letterSpacing: 1.4,
+    opacity: 0.95,
+    fontSize: 12,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.16)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  badge: {
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.95)',
+    shadowColor: '#0a3d91',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  badgeText: {
+    ...typography.styles.labelSm,
+    fontFamily: typography.fontFamilyLabel,
+    color: '#0f4fa3',
+    fontWeight: '900',
+    letterSpacing: 1,
+    fontSize: 13,
   },
   loader: {
     position: 'absolute',
     bottom: spacing.xxl,
+    zIndex: 2,
   },
 });

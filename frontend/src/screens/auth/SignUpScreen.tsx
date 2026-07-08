@@ -18,6 +18,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { BloodType } from '../../models/user';
 import { AlertModal } from '../../components/AlertModal';
+import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   Login: { role: 'hospital' | 'donor' | 'bloodbank' };
@@ -116,14 +117,22 @@ export const SignUpScreen: React.FC = () => {
       }
 
       if (success) {
-        (navigation as any).navigate('OTPVerification', {
-          emailOrPhone: email,
-          flow: 'signup',
-          role,
-        });
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          window.location.assign(`/login?role=${encodeURIComponent(role)}`);
+        } else {
+          navigation.replace('Login', { role } as any);
+        }
       }
     } catch (err: any) {
       showAlert('Registration Failed', err.message, 'error');
+    }
+  };
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Login', { role });
     }
   };
 
@@ -142,21 +151,26 @@ export const SignUpScreen: React.FC = () => {
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={[
-              styles.label,
-              isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
-            ]}>
-              {isHospital 
-                ? 'HOSPITAL CLINICAL ENROLLMENT' 
-                : isBloodBank 
-                ? 'CENTRAL BLOOD BANK ENROLLMENT' 
-                : 'VOLUNTEER DONOR REGISTRATION'
-              }
-            </Text>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>
-              Set up your profile to start coordinating life-saving assets.
-            </Text>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <View style={styles.headerContent}>
+              <Text style={[
+                styles.label,
+                isHospital ? styles.hospLabel : isBloodBank ? styles.hospLabel : styles.donorLabel
+              ]}>
+                {isHospital 
+                  ? 'HOSPITAL CLINICAL ENROLLMENT' 
+                  : isBloodBank 
+                  ? 'CENTRAL BLOOD BANK ENROLLMENT' 
+                  : 'VOLUNTEER DONOR REGISTRATION'
+                }
+              </Text>
+              <Text style={styles.title}>Create Account</Text>
+              <Text style={styles.subtitle}>
+                Set up your profile to start coordinating life-saving assets.
+              </Text>
+            </View>
           </View>
 
           <View style={styles.form}>
@@ -297,6 +311,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  headerContent: {
+    flex: 1,
   },
   label: {
     ...typography.styles.labelSm,

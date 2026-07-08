@@ -10,7 +10,7 @@ import {
 import { colors, spacing, typography } from '../../theme';
 import { Button } from '../../components/Button';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { StackActions, StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertModal } from '../../components/AlertModal';
 
@@ -93,37 +93,43 @@ export const OTPVerificationScreen: React.FC = () => {
     showAlert('Code Resent', 'A new 4-digit verification code has been dispatched.', 'success');
   };
 
-  const handleVerify = () => {
-    if (code.length < 4) {
-      showAlert('Incomplete Code', 'Please enter all 4 digits of the verification code.', 'warning');
+  useEffect(() => {
+    if (flow === 'signup' && code.length === 4) {
+      const timeout = setTimeout(() => {
+        completeVerification();
+      }, 400);
+      return () => clearTimeout(timeout);
+    }
+  }, [code, flow, role]);
+
+  const completeVerification = () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.location.assign('/login');
       return;
     }
 
-    const finalCode = code.join('');
-    
+    navigation.dispatch(StackActions.replace('Login', { role: role || 'donor' } as any));
+  };
+
+  const handleVerify = () => {
     if (flow === 'reset') {
-      showAlert(
-        'Success',
-        'Password has been successfully reset. Please log in with your new credentials.',
-        'success',
-        () => navigation.navigate('Login', { role: role || 'donor' })
-      );
-    } else {
-      // SignUp flow - redirect to appropriate dashboard
-      showAlert(
-        'Account Verified',
-        'Your registration is complete.',
-        'success',
-        () => {
-          if (role === 'hospital') {
-            navigation.replace('HospitalMain');
-          } else if (role === 'bloodbank') {
-            navigation.replace('BloodBankMain');
-          } else {
-            navigation.replace('DonorMain');
-          }
-        }
-      );
+      if (code.length < 4) {
+        showAlert('Incomplete Code', 'Please enter all 4 digits of the verification code.', 'warning');
+        return;
+      }
+
+      const finalCode = code.join('');
+      if (!/^\d{4}$/.test(finalCode)) {
+        showAlert('Invalid Code', 'Please enter a valid 4-digit verification code.', 'warning');
+        return;
+      }
+
+      completeVerification();
+      return;
+    }
+
+    if (flow === 'signup') {
+      completeVerification();
     }
   };
 
@@ -209,12 +215,17 @@ export const OTPVerificationScreen: React.FC = () => {
 
         {/* Verify Action Button */}
         <Button
-          title="Verify"
+          title={flow === 'signup' ? 'Continue to Dashboard' : 'Verify Code'}
           onPress={handleVerify}
-          disabled={code.length < 4}
-          variant="emergency" // Red brand action
+          variant="emergency"
           style={styles.verifyBtn}
         />
+
+        {flow === 'signup' && (
+          <TouchableOpacity onPress={completeVerification} style={styles.inlineAction}>
+            <Text style={styles.inlineActionText}>Skip to next screen</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Numeric Keypad Footer */}
@@ -360,6 +371,16 @@ const styles = StyleSheet.create({
   verifyBtn: {
     width: '100%',
     marginVertical: spacing.md,
+  },
+  inlineAction: {
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  inlineActionText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   keypadContainer: {
     backgroundColor: '#f4f6fa',

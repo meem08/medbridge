@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { BloodRequest, UrgencyLevel, RequestStatus } from '../models/bloodRequest';
 import { BloodType } from '../models/user';
 import { BloodInventory } from '../models/inventory';
+import { API_URL } from '../utils/api';
 
 interface BloodContextType {
   inventory: BloodInventory;
@@ -33,8 +34,6 @@ const initialInventory: BloodInventory = {
 
 // Initial Mock Requests
 const initialRequests: BloodRequest[] = [];
-
-const API_URL = 'http://localhost:5001/api';
 
 export const BloodProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [inventory, setInventory] = useState<BloodInventory>(initialInventory);
@@ -100,6 +99,23 @@ export const BloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     notes?: string
   ): Promise<string> => {
     setIsLoading(true);
+
+    const fallbackRequestId = 'REQ-' + Date.now();
+    const optimisticRequest: BloodRequest = {
+      id: fallbackRequestId,
+      hospitalId: 'hosp_1',
+      hospitalName: 'Metro Health Medical Center',
+      bloodType,
+      units,
+      urgency,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      deliveryLocation,
+      notes,
+    };
+
+    setRequests((prev) => [optimisticRequest, ...prev]);
+
     try {
       const response = await fetch(`${API_URL}/requests`, {
         method: 'POST',
@@ -110,21 +126,37 @@ export const BloodProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           urgency,
           hospitalName: 'Metro Health Medical Center',
           location: deliveryLocation,
+          explanation: notes || '',
         }),
       });
 
       const resData = await response.json();
-      if (resData.success && resData.data) {
+      if (response.ok && resData.success && resData.data) {
+        const createdRequest: BloodRequest = {
+          id: resData.data.id,
+          hospitalId: 'hosp_1',
+          hospitalName: resData.data.hospitalName || 'Metro Health Medical Center',
+          bloodType: resData.data.bloodType as BloodType,
+          units: resData.data.units,
+          urgency: resData.data.urgency as UrgencyLevel,
+          status: resData.data.status as RequestStatus,
+          createdAt: resData.data.createdAt,
+          deliveryLocation: resData.data.location,
+          notes: resData.data.explanation || notes,
+        };
+
+        setRequests((prev) => [createdRequest, ...prev.filter((req) => req.id !== fallbackRequestId)]);
         await fetchRequests();
         await fetchInventory();
         setIsLoading(false);
-        return resData.data.id;
+        return createdRequest.id;
       }
     } catch (err) {
       console.error('Error creating blood request:', err);
     }
+
     setIsLoading(false);
-    return 'req_' + Date.now();
+    return fallbackRequestId;
   };
 
   const updateRequestStatus = async (requestId: string, status: RequestStatus) => {

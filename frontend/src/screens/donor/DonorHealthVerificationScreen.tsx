@@ -25,8 +25,7 @@ type VerificationRouteProp = RouteProp<RootStackParamList, 'DonorHealthVerificat
 type NavigationProp = StackNavigationProp<RootStackParamList, 'DonorHealthVerification'>;
 
 import { useAuth } from '../../context/AuthContext';
-
-const API_URL = 'http://localhost:5001/api';
+import { API_URL } from '../../utils/api';
 
 export const DonorHealthVerificationScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();

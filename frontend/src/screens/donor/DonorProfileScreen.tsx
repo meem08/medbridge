@@ -14,8 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { AlertModal } from '../../components/AlertModal';
-
-const API_URL = 'http://localhost:5001/api';
+import { API_URL } from '../../utils/api';
 
 export const DonorProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();

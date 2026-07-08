@@ -9,11 +9,13 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { colors, spacing, typography } from '../../theme';
 import { Button } from '../../components/Button';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 
 type RootStackParamList = {
   Onboarding: undefined;
@@ -57,7 +59,15 @@ export const OnboardingScreen: React.FC = () => {
         animated: true,
       });
     } else {
-      navigation.replace('ChooseRole');
+      navigation.navigate('ChooseRole');
+    }
+  };
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Splash');
     }
   };
 
@@ -130,11 +140,15 @@ export const OnboardingScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} onLayout={handleLayout}>
+      <View style={styles.heroBar} />
       {/* Skip Button */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
         <Button
           title="Skip"
-          onPress={() => navigation.replace('ChooseRole')}
+          onPress={() => navigation.navigate('ChooseRole')}
           variant="text"
           textStyle={styles.skipText}
         />
@@ -196,12 +210,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  heroBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 140,
+    backgroundColor: 'rgba(0, 22, 59, 0.04)',
+  },
   header: {
     height: 48,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.containerPadding,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   skipText: {
     color: colors.textSecondary,
@@ -261,6 +289,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '700',
     textAlign: 'center',
+    letterSpacing: 0.4,
   },
   slideDesc: {
     ...typography.styles.bodyMd,
@@ -268,6 +297,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.md,
     lineHeight: 24,
+    maxWidth: 320,
   },
   footer: {
     paddingHorizontal: spacing.containerPadding,
@@ -291,7 +321,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   dotActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.secondary,
     width: 20,
   },
   actionButton: {

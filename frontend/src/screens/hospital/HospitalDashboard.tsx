@@ -139,13 +139,22 @@ export const HospitalDashboard: React.FC = () => {
           </Card>
         ) : null}
 
+        {/* Clinical Operations Summary */}
+        <Card style={styles.summaryCard}>
+          <View style={styles.summaryHeader}>
+            <Text style={styles.summaryTitle}>Clinical Operations</Text>
+            <Badge type="success" label="LIVE" />
+          </View>
+          <Text style={styles.summaryText}>Your hospital is ready to receive blood requests and coordinate urgent dispatches.</Text>
+        </Card>
+
         {/* Immediate Emergency Action Area */}
         <View style={styles.actionContainer}>
           <Text style={styles.sectionTitle}>Emergency Dispatch</Text>
           <Button
             title="Initiate Emergency Request"
             onPress={() => navigation.navigate('EmergencyRequest')}
-            variant="emergency" // Red Emergency Button
+            variant="emergency"
             style={styles.emergencyBtn}
           />
         </View>
@@ -253,6 +262,27 @@ const styles = StyleSheet.create({
   alertBtn: {
     height: 40,
     marginTop: spacing.xs,
+  },
+  summaryCard: {
+    marginBottom: spacing.md,
+    backgroundColor: 'rgba(0, 22, 59, 0.03)',
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  summaryTitle: {
+    ...typography.styles.headlineMd,
+    fontSize: 18,
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  summaryText: {
+    ...typography.styles.bodySm,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
   actionContainer: {
     marginVertical: spacing.md,

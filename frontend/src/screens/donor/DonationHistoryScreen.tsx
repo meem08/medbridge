@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { formatDate } from '../../utils/formatters';
 import { useAuth } from '../../context/AuthContext';
+import { API_URL } from '../../utils/api';
 
 interface DonationItem {
   id: string;
@@ -25,8 +26,6 @@ interface DonationItem {
   hemoglobin: string;  // Hemoglobin levels
   pulse: string;       // Pulse rate
 }
-
-const API_URL = 'http://localhost:5001/api';
 
 export const DonationHistoryScreen: React.FC = () => {
   const navigation = useNavigation();

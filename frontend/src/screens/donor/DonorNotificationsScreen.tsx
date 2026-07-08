@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useBlood } from '../../context/BloodContext';
+import { API_URL } from '../../utils/api';
 
 interface DonorNotificationItem {
   id: string;
@@ -25,8 +26,6 @@ interface DonorNotificationItem {
   description: string;
   isRead: boolean;
 }
-
-const API_URL = 'http://localhost:5001/api';
 
 export const DonorNotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
